@@ -1,56 +1,46 @@
-# PATA ANDINA VET · V25
+# PATA ANDINA VET · V26
 
-## 1) Instalar el SQL limpio
-1. Abre Supabase → SQL Editor → New query.
-2. Abre `supabase/INSTALACION_LIMPIA_COMPLETA.sql`.
-3. Copia todo, pégalo y pulsa Run una sola vez.
+## 1. Crear las cuentas de demostración
+En Supabase → Authentication → Users → Add user, crea y confirma:
 
-El script borra los datos operativos de `public` (perfiles, mascotas, citas,
-historiales, servicios, códigos y bitácora) y los vuelve a cargar. NO borra
-`auth.users` ni contraseñas. Inserta 50 servicios únicos y 200 eventos
-marcados como demostración. Si ya existe el usuario cliente demo, crea tres
-mascotas, tres historiales y dos citas futuras de prueba.
+- Cliente: `cliente.demo@pataandina.test` / `PataDemo2026!`
+- Administrador: `admin.demo@pataandina.test` / `AdminPata2026!`
 
-## 2) Crear usuarios para iniciar sesión
-Supabase no permite crear cuentas Auth/passwords de forma soportada desde
-un SQL del editor. Crea las cuentas en Authentication → Users → Add user,
-activa Auto Confirm User y establece la contraseña:
+Supabase Auth administra las contraseñas; no se crean con INSERT SQL. Cambia las claves tras la prueba.
 
-- Cliente: `cliente.demo@pataandina.test` / `ClienteDemo2026!`
-- Administrador: `admin.demo@pataandina.test` / `AdminDemo2026!`
+## 2. Cargar TODA la base de datos con un solo SQL
+Abre `supabase/INSTALACION_LIMPIA_COMPLETA.sql`, copia el archivo entero en Supabase → SQL Editor → New query y pulsa Run.
 
-Después de crear las cuentas, vuelve a ejecutar el SQL si lo habías corrido
-antes de crear los usuarios. El script genera sus perfiles y asigna `tutor`
-al cliente y `staff` al correo admin indicado. No compartas el acceso admin.
+**Advertencia:** el script borra y reconstruye los datos operativos de `public`, pero conserva `auth.users` y sus contraseñas. No lo ejecutes sobre datos reales sin respaldo.
 
-Si el alta desde la pantalla web muestra rate limit, no repitas el registro:
-crea el usuario desde Authentication → Users. El login con contraseña sigue
-funcionando una vez que la cuenta está creada y confirmada.
+Carga 50 servicios, 200 eventos DEMO, 15 mascotas, 15 historiales, vacunas, desparasitaciones y tres citas futuras. Si el usuario demo no existe, asigna las mascotas a la primera cuenta tutor existente. Si no hay tutor, muestra un aviso. La salida final muestra los conteos.
 
-## 3) Invitado
-Abre `invitado.html`. El invitado solo ve el catálogo de servicios públicos.
-No ve avances, galería, mascotas, citas, pedidos, perfiles ni historiales.
-No se invoca Supabase Auth. Los botones para solicitar una cita llevan al
-login. La app privada `app.html` exige una sesión antes de mostrar contenido.
+## 3. Funciones de la aplicación
+- Login, registro, confirmación de correo y recuperación/cambio de contraseña.
+- Perfil de tutor, mascotas (crear/editar/eliminar), historial clínico.
+- Vacunas y desparasitación visibles dentro del historial por mascota.
+- Catálogo de servicios con filtros y fotografías ampliables.
+- Reserva de citas en pasos: mascota → servicio → fecha/horario → confirmación; validación de horarios y prevención de cruces en la BD.
+- Mis citas y cancelación; panel de personal para agenda y registrar atenciones; bitácora.
+- Invitado: catálogo de servicios únicamente, sin autenticación ni acceso a tablas privadas. Las acciones restringidas redirigen al login.
+- Avances ocultos: ocho toques seguidos sobre el logotipo superior; el séptimo avisa y el octavo abre la sección con scroll interno.
 
-El SQL permite a `anon` únicamente `SELECT` sobre `services_catalog` con
-`active=true`; no concede acceso anónimo a las demás tablas.
-
-## 4) Publicar
-Copia el contenido de esta carpeta a la raíz del repositorio `PataAndina` y
-ejecuta:
+## 4. Publicar
+Copia esta carpeta a la raíz del repositorio `PataAndina` y ejecuta:
 
 ```bash
 git add .
-git commit -m "Pata Andina V25: invitado solo servicios y SQL limpio"
+git commit -m "Pata Andina V26: mascotas, vacunas y avances ocultos"
 git push origin main
 ```
 
-Luego abre `https://dev-mark42.github.io/PataAndina/invitado.html` y fuerza
-recarga con Ctrl+Shift+R. La versión del Service Worker se incrementó para
-renovar la caché.
+Después abre `https://dev-mark42.github.io/PataAndina/index.html` y fuerza recarga con `Ctrl + Shift + R`.
 
-## 5) Verificación local
-Con Node instalado, ejecuta `npm test`. El test de invitado comprueba que
-solo consulta `services_catalog`, no usa Auth, dirige las acciones al login,
-y que el SQL contiene 50 servicios únicos y 200 eventos demo.
+## 5. Pruebas locales
+Con Node instalado:
+
+```bash
+npm test
+```
+
+Las pruebas revisan referencias locales, modo invitado de solo lectura, el acceso oculto por ocho toques, el historial de vacunas/desparasitación y la presencia de 15 mascotas/200 eventos en el SQL. No equivalen a ejecutar el SQL en tu proyecto Supabase real; esa verificación final se hace al pulsar Run y revisar los conteos devueltos.

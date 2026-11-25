@@ -23,6 +23,11 @@ assert(app.includes("if (!session) return location.replace('./index.html')"), 'a
 assert(sw.includes("'./invitado.html'"), 'PWA precarga la ruta invitado');
 assert(ids.length === 50 && new Set(ids).size === 50, 'SQL inserta 50 servicios con IDs únicos');
 assert(sql.includes('generate_series(1,200)'), 'SQL crea 200 eventos demo');
+assert(sql.includes('15 mascotas') && sql.includes('Kira'), 'SQL incluye 15 mascotas demo');
+assert(sql.includes('create table if not exists public.pet_vaccinations'), 'SQL incluye tabla de vacunas');
+assert(sql.includes('create table if not exists public.pet_deworming'), 'SQL incluye tabla de desparasitación');
+assert(app.includes('logoTapCount >= 8') && app.includes("go('avances')"), 'Avances se desbloquean con ocho toques al logo');
+assert(app.includes("from('pet_vaccinations')") && app.includes("from('pet_deworming')"), 'Historial muestra vacunas y desparasitación');
 assert(sql.includes('delete from public.appointment_requests') && sql.includes('delete from public.profiles'), 'SQL limpia datos operativos');
 assert(sql.includes('create policy services_select on public.services_catalog for select to anon, authenticated'), 'anon solo tiene política pública de servicios');
 assert(sql.includes('revoke all on public.profiles, public.pets, public.services_catalog,'), 'SQL revoca permisos previos');

@@ -46,15 +46,18 @@
   };
   const ico = id => `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[id]}</svg>`;
   /* Menú subdividido por secciones (g): laptop = grupos plegables; celular = hoja con secciones */
+  let advancesUnlocked = false;
+  let logoTapCount = 0, logoTapTimer = null;
   const NAV = [
     { id: 'inicio', t: 'Inicio', g: 'Principal' }, { id: 'reservar', t: 'Reservar', g: 'Principal' }, { id: 'turnos', t: 'Mis citas', g: 'Principal' },
     { id: 'mascotas', t: 'Mascotas', g: 'Mis mascotas' }, { id: 'historial', t: 'Historial', g: 'Mis mascotas' },
     { id: 'servicios', t: 'Servicios', g: 'Clínica' }, { id: 'personal', t: 'Personal', g: 'Clínica', staff: true }, { id: 'bitacora', t: 'Bitácora', g: 'Administración', staff: true },
-    { id: 'perfil', t: 'Perfil', g: 'Cuenta' }
+    { id: 'perfil', t: 'Perfil', g: 'Cuenta' },
+    { id: 'avances', t: 'Avances', g: 'Administración', secret: true }
   ];
   const DOCK = ['inicio', 'reservar', 'turnos', 'mascotas'];
   let current = '', arg = null;
-  const visibleNav = () => NAV.filter(n => !n.staff || S.staff);
+  const visibleNav = () => NAV.filter(n => (!n.staff || S.staff) && (!n.secret || advancesUnlocked));
   const navBtn = n => `<button class="nav-btn" data-nav="${n.id}"><span class="e">${ico(n.id)}</span><span>${n.t}</span></button>`;
   function buildNav() {
     const items = visibleNav(), groups = [...new Set(items.map(n => n.g))];
@@ -77,6 +80,17 @@
     const trigger = $('.menu-btn'); if (trigger) trigger.setAttribute('aria-expanded', String(show));
   }
   $('.menu-btn')?.addEventListener('click', () => toggleSide());
+  // Acceso oculto a Avances: 7 toques advierten, el octavo habilita la sección.
+  $('.brand')?.addEventListener('click', () => {
+    logoTapCount++; clearTimeout(logoTapTimer);
+    if (logoTapCount === 7) P.toast('Un toque más para abrir Avances.', 'ok');
+    if (logoTapCount >= 8) {
+      logoTapCount = 0; advancesUnlocked = true; buildNav();
+      P.toast('Avances desbloqueados. Desplázate dentro de la sección.', 'ok');
+      go('avances'); P.confetti(12); return;
+    }
+    logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 2200);
+  });
   document.addEventListener('click', e => {
     if (e.target.closest('[data-close-menu]')) toggleSide(false);
     if (e.target.classList.contains('side-backdrop')) toggleSide(false);
@@ -300,10 +314,19 @@
     let pid = (arg && arg.pet) || S.pets[0].id;
     async function draw() {
       m.innerHTML = `<div class="view"><h2>Historial médico</h2><div class="chips">${S.pets.map(p => `<button class="chip ${p.id === pid ? 'active' : ''}" data-p="${p.id}">${p.species === 'gato' ? '🐱' : p.species === 'perro' ? '🐶' : '🐾'} ${esc(p.name)}</button>`).join('')}</div><div id="recs">${skeleton(2)}</div></div>`;
-      let recs; try { recs = await q('rec' + pid, () => sb.from('pet_medical_records').select('*').eq('pet_id', pid).order('visit_date', { ascending: false })); } catch (e) { if ($('#recs')) $('#recs').innerHTML = `<div class="notice bad">${esc(errMsg(e))}</div>`; return; }
+      let recs, vaccines = [], dewormings = []; try {
+        [recs, vaccines, dewormings] = await Promise.all([
+          q('rec' + pid, () => sb.from('pet_medical_records').select('*').eq('pet_id', pid).order('visit_date', { ascending: false })),
+          q('vacc' + pid, () => sb.from('pet_vaccinations').select('*').eq('pet_id', pid).order('applied_on', { ascending: false })),
+          q('deworm' + pid, () => sb.from('pet_deworming').select('*').eq('pet_id', pid).order('applied_on', { ascending: false }))
+        ]);
+      } catch (e) { if ($('#recs')) $('#recs').innerHTML = `<div class="notice bad">${esc(errMsg(e))}</div>`; return; }
       if (!$('#recs')) return;
       const next = recs.filter(r => r.next_visit && r.next_visit >= todayLP()).map(r => r.next_visit).sort()[0];
-      $('#recs').innerHTML = (next ? `<div class="notice" style="background:var(--accent-soft)">🔔 <b>Próxima visita sugerida:</b> ${fmtDay(next)} <button class="btn sm accent" data-book="${pid}" style="margin-left:.5rem">Reservar</button></div>` : '') +
+      $('#recs').innerHTML = `<div class="cols2 clinical-summary"><div class="card"><b>💉 Vacunas</b><p>${vaccines.length} registros</p><small>${vaccines[0] ? esc(vaccines[0].vaccine_name) + ' · ' + fmtDay(vaccines[0].applied_on) : 'Sin vacunas registradas'}</small></div><div class="card"><b>🛡️ Desparasitación</b><p>${dewormings.length} registros</p><small>${dewormings[0] ? esc(dewormings[0].product_name) + ' · ' + fmtDay(dewormings[0].applied_on) : 'Sin registros'}</small></div></div>` +
+        (vaccines.length ? `<h3>Vacunación</h3><div class="card clinical-list">${vaccines.map(x=>`<p><b>${esc(x.vaccine_name)}</b> · ${fmtDay(x.applied_on)}${x.next_due ? ' · Próxima: '+fmtDay(x.next_due) : ''}</p>`).join('')}</div>` : '') +
+        (dewormings.length ? `<h3>Desparasitación</h3><div class="card clinical-list">${dewormings.map(x=>`<p><b>${esc(x.product_name)}</b> · ${fmtDay(x.applied_on)}${x.next_due ? ' · Próxima: '+fmtDay(x.next_due) : ''}</p>`).join('')}</div>` : '') +
+        (next ? `<div class="notice" style="background:var(--accent-soft)">🔔 <b>Próxima visita sugerida:</b> ${fmtDay(next)} <button class="btn sm accent" data-book="${pid}" style="margin-left:.5rem">Reservar</button></div>` : '') +
         `<div data-group="1">${recs.map((r, i) => `<div class="acc ${i === 0 ? 'open' : ''}"><button class="acc-head" aria-expanded="${i === 0}"><span class="ico">🩺</span><span class="grow"><b>${esc(r.diagnosis.slice(0, 60))}${r.diagnosis.length > 60 ? '…' : ''}</b><span class="sub">${fmtDay(r.visit_date)}</span></span></button>
         <div class="acc-body"><div class="acc-in"><div class="acc-pad"><dl class="kv"><dt>Diagnóstico</dt><dd>${esc(r.diagnosis)}</dd><dt>Tratamiento</dt><dd>${esc(r.treatment || '—')}</dd><dt>Receta</dt><dd>${esc(r.prescription || '—')}</dd><dt>Peso</dt><dd>${r.weight_kg ? r.weight_kg + ' kg' : '—'}</dd><dt>Próxima visita</dt><dd>${r.next_visit ? fmtDay(r.next_visit) : '—'}</dd></dl></div></div></div></div>`).join('')}</div>` +
         (recs.length ? '' : empty('Aún no hay atenciones registradas para esta mascota.'));
@@ -415,7 +438,17 @@
     m.innerHTML = `<div class="view"><div class="audit-heading"><div><span class="eyebrow">CONTROL INTERNO</span><h2>Bitácora de eventos</h2><p class="lead">Registro cronológico de actividad. Los eventos de demostración están identificados.</p></div><button class="btn sm" id="auditRefresh">↻ Actualizar</button></div><div class="audit-stats"><div class="card"><b>${data.length}</b><span>Eventos visibles</span></div><div class="card"><b>${data.filter(x=>!x.is_demo).length}</b><span>Eventos reales registrados</span></div><div class="card"><b>${data.filter(x=>x.is_demo).length}</b><span>Datos de demostración</span></div></div><div class="audit-list">${data.map(x=>`<article class="audit-row"><span class="audit-dot"></span><div class="audit-content"><div><b>${esc(x.event_type.replaceAll('_',' '))}</b>${x.is_demo?'<span class="tag">DEMO</span>':''}<time>${new Date(x.created_at).toLocaleString('es-BO',{dateStyle:'medium',timeStyle:'short',timeZone:'America/La_Paz'})}</time></div><p>${esc(x.description)}</p><small>${esc(x.entity_type || 'sistema')} · #${x.id}</small></div></article>`).join('') || empty('Todavía no hay eventos.')}</div></div>`;
     $('#auditRefresh').onclick=()=>go('bitacora');
   }
-  const VIEWS = { inicio: vInicio, mascotas: vMascotas, reservar: vReservar, turnos: vTurnos, historial: vHistorial, servicios: vServicios, personal: vPersonal, bitacora: vBitacora, perfil: vPerfil };
+  async function vAvances(m) {
+    if (!advancesUnlocked) { m.innerHTML = `<div class="view"><h2>Acceso oculto</h2><p>Esta sección se abre tocando ocho veces el logotipo.</p></div>`; return; }
+    let weeks = [];
+    try { const r = await fetch('./data/curso.json', { cache: 'no-store' }); if (!r.ok) throw new Error('No se pudo leer el contenido'); weeks = await r.json(); }
+    catch (_) { m.innerHTML = `<div class="view"><h2>Avances</h2><div class="notice bad">No se pudo cargar el contenido de avances.</div></div>`; return; }
+    const total = weeks.reduce((n,w) => n + (w.temas || []).length, 0);
+    m.innerHTML = `<div class="view advances-view"><span class="eyebrow">SECCIÓN OCULTA · ACCESO POR LOGOTIPO</span><h2>Avances del proyecto</h2><p class="lead">Contenido académico y demostraciones. Desplázate dentro de este panel; el menú permanece disponible.</p><div class="card advances-summary"><b>${total} temas disponibles</b><p class="hint">Toca cada tema para ver su explicación.</p></div><div class="advances-scroll" tabindex="0" aria-label="Lista desplazable de avances">${weeks.map((w,i)=>`<section class="card advance-week"><span class="eyebrow">SEMANA ${w.semana || i+1}</span><h3>${esc(w.titulo || 'Avances')}</h3><div data-group="1">${(w.temas||[]).map(t=>`<article class="acc"><button class="acc-head" type="button" aria-expanded="false"><span class="ico">✦</span><span class="grow"><b>${esc(t.t || t.titulo || 'Tema')}</b><span class="sub">${esc(t.id || '')}</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(t.d || t.descripcion || '')}</p>${t.demo==='tema'?'<button class="btn sm" data-advance-theme>Probar tema</button>':''}${t.demo==='toast'?'<button class="btn sm" data-advance-toast>Ver alertas</button>':''}${t.demo==='filtro'?'<button class="btn sm" data-nav="servicios">Abrir catálogo</button>':''}</div></div></div></article>`).join('')}</div></section>`).join('')}</div></div>`;
+    m.querySelector('[data-advance-theme]')?.addEventListener('click', () => $('#themeBtn')?.click());
+    m.querySelector('[data-advance-toast]')?.addEventListener('click', () => { P.toast('Ejemplo de confirmación.', 'ok'); P.toast('Ejemplo de advertencia.', 'err'); });
+  }
+  const VIEWS = { inicio: vInicio, mascotas: vMascotas, reservar: vReservar, turnos: vTurnos, historial: vHistorial, servicios: vServicios, personal: vPersonal, bitacora: vBitacora, perfil: vPerfil, avances: vAvances };
   try { await loadProfile(); } catch (e) { $('#main').innerHTML = `<div class="view">${empty('No se pudo cargar tu perfil. ' + esc(errMsg(e)), '<button class="btn primary" onclick="location.reload()">Reintentar</button>')}</div>`; return; }
   buildNav(); go(location.hash.slice(1) || 'inicio');
   document.addEventListener('visibilitychange', () => { if (!document.hidden && ['turnos', 'personal', 'inicio'].includes(current) && navigator.onLine && !$('.modal-bg')) refresh(); });

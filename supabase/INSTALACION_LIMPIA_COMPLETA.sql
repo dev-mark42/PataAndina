@@ -211,6 +211,36 @@ create table if not exists public.pet_medical_records (
 );
 create index if not exists records_pet_idx on public.pet_medical_records(pet_id, visit_date desc);
 
+-- ---------- VACUNACIÓN Y DESPARASITACIÓN ----------
+create table if not exists public.pet_vaccinations (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid not null references public.pets(id) on delete cascade,
+  vaccine_name text not null check (char_length(btrim(vaccine_name)) between 2 and 100),
+  applied_on date not null,
+  next_due date,
+  batch text check (batch is null or char_length(batch) <= 60),
+  notes text check (notes is null or char_length(notes) <= 300),
+  created_by uuid references public.profiles(id),
+  created_at timestamptz not null default now(),
+  check (next_due is null or next_due >= applied_on)
+);
+create index if not exists vaccinations_pet_idx on public.pet_vaccinations(pet_id, applied_on desc);
+
+create table if not exists public.pet_deworming (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid not null references public.pets(id) on delete cascade,
+  product_name text not null check (char_length(btrim(product_name)) between 2 and 100),
+  applied_on date not null,
+  next_due date,
+  weight_kg numeric(5,2) check (weight_kg is null or (weight_kg > 0 and weight_kg < 120)),
+  notes text check (notes is null or char_length(notes) <= 300),
+  created_by uuid references public.profiles(id),
+  created_at timestamptz not null default now(),
+  check (next_due is null or next_due >= applied_on)
+);
+create index if not exists deworming_pet_idx on public.pet_deworming(pet_id, applied_on desc);
+
+
 -- Personal: registrar atención (y completar la cita asociada si existe)
 create or replace function public.staff_register_attention(
   p_pet uuid, p_appointment uuid, p_diagnosis text, p_treatment text,
@@ -512,74 +542,94 @@ set full_name=excluded.full_name,
     phone=excluded.phone,
     role=excluded.role;
 
--- Crear mascotas, historiales y dos citas futuras para el cliente demo,
--- únicamente si esa cuenta ya fue creada en Authentication.
+-- Datos clínicos DEMO: 15 mascotas vinculadas al usuario cliente.demo.
+-- IMPORTANTE: el usuario debe existir primero en Authentication > Users.
 do $$
 declare
   v_client uuid;
-  v_luna uuid;
-  v_michi uuid;
-  v_toby uuid;
+  v_missing integer;
 begin
-  select id into v_client
-  from auth.users
-  where lower(email)='cliente.demo@pataandina.test'
-  limit 1;
-
+  select id into v_client from auth.users
+   where lower(email)='cliente.demo@pataandina.test' limit 1;
+  -- Si el correo demo no existe, usar la primera cuenta con rol tutor ya creada.
   if v_client is null then
-    raise notice 'Falta crear cliente.demo@pataandina.test en Authentication > Users.';
+    select p.id into v_client
+    from public.profiles p join auth.users u on u.id=p.id
+    where p.role='tutor' and lower(coalesce(u.email,'')) <> 'admin.demo@pataandina.test'
+    order by p.created_at asc limit 1;
+  end if;
+  if v_client is null then
+    raise notice 'No se insertaron mascotas: crea primero al menos una cuenta cliente en Authentication > Users.';
     return;
   end if;
 
-  insert into public.pets(owner_id,name,species,breed,sex,birth_date,weight_kg,notes)
-  values (v_client,'Luna','perro','Mestiza','hembra',date '2021-04-12',12.40,'Mascota ficticia de demostración.')
-  returning id into v_luna;
+  insert into public.profiles(id,full_name,phone,role)
+  values(v_client,'Cliente Demo Pata Andina','71234567','tutor')
+  on conflict(id) do update set full_name=excluded.full_name,phone=excluded.phone,role='tutor';
 
   insert into public.pets(owner_id,name,species,breed,sex,birth_date,weight_kg,notes)
-  values (v_client,'Michi','gato','Doméstico de pelo corto','macho',date '2022-09-03',4.20,'Mascota ficticia de demostración.')
-  returning id into v_michi;
+  select v_client,x.name,x.species,x.breed,x.sex,x.birth_date::date,x.weight_kg,x.notes
+  from (values
+    ('Luna','perro','Mestiza','hembra','2021-04-12',12.40,'Paciente demo: control preventivo.'),
+    ('Michi','gato','Doméstico de pelo corto','macho','2022-09-03',4.20,'Paciente demo: control felino.'),
+    ('Toby','perro','Golden Retriever','macho','2019-02-20',26.80,'Paciente demo: seguimiento de peso.'),
+    ('Nala','gato','Siamés','hembra','2023-05-17',3.70,'Paciente demo: control anual.'),
+    ('Rocky','perro','Labrador','macho','2020-02-11',24.50,'Paciente demo: actividad y peso.'),
+    ('Mora','perro','Schnauzer','hembra','2023-01-27',8.20,'Paciente demo: revisión dental.'),
+    ('Simba','gato','Mestizo','macho','2021-09-09',5.10,'Paciente demo: vacunas.'),
+    ('Coco','otro','Conejo','macho','2024-03-03',1.60,'Paciente demo: manejo cuidadoso.'),
+    ('Canela','perro','Cocker Spaniel','hembra','2022-07-14',11.30,'Paciente demo: piel y pelaje.'),
+    ('Max','perro','Pastor Alemán','macho','2018-11-22',31.20,'Paciente demo: adulto senior.'),
+    ('Milu','gato','Persa','hembra','2020-08-08',4.00,'Paciente demo: cuidado del manto.'),
+    ('Bobby','perro','Poodle','macho','2024-01-15',5.40,'Paciente demo: cachorro.'),
+    ('Pelusa','gato','Angora','hembra','2023-12-02',3.90,'Paciente demo: control felino.'),
+    ('Duque','perro','Bulldog francés','macho','2021-06-30',13.10,'Paciente demo: control respiratorio.'),
+    ('Kira','perro','Border Collie','hembra','2022-04-09',17.80,'Paciente demo: actividad física.')
+  ) as x(name,species,breed,sex,birth_date,weight_kg,notes)
+  where not exists(select 1 from public.pets p where p.owner_id=v_client and lower(p.name)=lower(x.name));
 
-  insert into public.pets(owner_id,name,species,breed,sex,birth_date,weight_kg,notes)
-  values (v_client,'Toby','perro','Golden Retriever','macho',date '2019-02-20',26.80,'Mascota ficticia de demostración.')
-  returning id into v_toby;
+  -- Historial clínico ficticio para cada mascota (marcado expresamente como demo).
+  insert into public.pet_medical_records(pet_id,visit_date,diagnosis,treatment,prescription,weight_kg,next_visit,created_by)
+  select p.id, date '2026-10-15' - ((row_number() over(order by p.name)::int % 45) * interval '1 day'),
+         'Control preventivo DEMO · '||p.name,
+         'Evaluación general ficticia para probar la ficha clínica.',
+         'Dato académico de demostración. No constituye una receta real.',
+         p.weight_kg, date '2026-12-15', v_client
+  from public.pets p
+  where p.owner_id=v_client
+    and not exists(select 1 from public.pet_medical_records r where r.pet_id=p.id and r.diagnosis='Control preventivo DEMO · '||p.name);
 
-  insert into public.pet_medical_records
-    (pet_id,visit_date,diagnosis,treatment,prescription,weight_kg,next_visit,created_by)
-  values
-    (v_luna,date '2026-10-08','Control preventivo de demostración',
-     'Evaluación general ficticia para probar el historial.',
-     'Ejemplo académico; no es una indicación médica real.',12.40,date '2026-12-08',null),
-    (v_michi,date '2026-09-19','Evaluación felina de demostración',
-     'Registro ficticio para probar la ficha clínica.',
-     'Ejemplo académico; confirmar cualquier pauta con el veterinario.',4.20,date '2026-12-19',null),
-    (v_toby,date '2026-08-21','Control de condición corporal demo',
-     'Seguimiento de peso ficticio.',
-     'Ejemplo académico; no es una indicación médica real.',26.80,date '2026-11-28',null);
+  insert into public.pet_vaccinations(pet_id,vaccine_name,applied_on,next_due,batch,notes,created_by)
+  select p.id, case when p.species='gato' then 'Triple felina (DEMO)' else 'Polivalente (DEMO)' end,
+         date '2026-09-15', date '2027-09-15', 'LOTE-DEMO-2026',
+         'Registro ficticio para demostración; validar carnet real.', v_client
+  from public.pets p where p.owner_id=v_client
+    and not exists(select 1 from public.pet_vaccinations v where v.pet_id=p.id and v.vaccine_name like '%(DEMO)');
 
-  -- Dos reservas futuras en días hábiles y horarios separados.
-  with days as (
-    select gs.day_ts::date as visit_day,
-           row_number() over(order by gs.day_ts) as rn
-    from generate_series(
-      (now() at time zone 'America/La_Paz')::date + 1,
-      (now() at time zone 'America/La_Paz')::date + 14,
-      interval '1 day'
-    ) as gs(day_ts)
-    where extract(isodow from gs.day_ts) between 1 and 6
-  )
-  insert into public.appointment_requests
-    (owner_id,pet_id,service_id,starts_at,ends_at,note)
-  select
-    v_client,
-    case when days.rn=1 then v_luna else v_michi end,
-    'consulta-general',
-    ((days.visit_day + time '10:00' + ((days.rn-1) * interval '1 hour'))
-      at time zone 'America/La_Paz'),
-    ((days.visit_day + time '10:30' + ((days.rn-1) * interval '1 hour'))
-      at time zone 'America/La_Paz'),
-    'Cita ficticia de demostración. Confirmar disponibilidad real.'
-  from days
-  where days.rn <= 2;
+  insert into public.pet_deworming(pet_id,product_name,applied_on,next_due,weight_kg,notes,created_by)
+  select p.id,'Antiparasitario de ejemplo (DEMO)',date '2026-10-01',date '2027-01-01',p.weight_kg,
+         'Registro ficticio; producto y pauta reales requieren indicación veterinaria.',v_client
+  from public.pets p where p.owner_id=v_client
+    and not exists(select 1 from public.pet_deworming d where d.pet_id=p.id and d.product_name='Antiparasitario de ejemplo (DEMO)');
+
+  -- Tres citas futuras de ejemplo en días hábiles; las valida el trigger de agenda.
+  if not exists(select 1 from public.appointment_requests a where a.owner_id=v_client and a.note like 'Cita DEMO V26%') then
+    with days as (
+      select gs.day_ts::date visit_day,row_number() over(order by gs.day_ts) rn
+      from generate_series((now() at time zone 'America/La_Paz')::date+1,
+                           (now() at time zone 'America/La_Paz')::date+20,interval '1 day') gs(day_ts)
+      where extract(isodow from gs.day_ts) between 1 and 6
+    ), demo_pets as (
+      select id,row_number() over(order by name) rn from public.pets where owner_id=v_client
+    )
+    insert into public.appointment_requests(owner_id,pet_id,service_id,starts_at,ends_at,note)
+    select v_client,dp.id,'consulta-general',
+      ((d.visit_day + time '10:00') at time zone 'America/La_Paz'),
+      ((d.visit_day + time '10:30') at time zone 'America/La_Paz'),
+      'Cita DEMO V26: horario ficticio, confirmar con la clínica.'
+    from days d join demo_pets dp on dp.rn=d.rn
+    where d.rn<=3;
+  end if;
 end $$;
 
 -- Comprobación final de carga.
@@ -597,7 +647,11 @@ select 'mascotas', count(*)::text from public.pets
 union all
 select 'citas', count(*)::text from public.appointment_requests
 union all
-select 'historiales', count(*)::text from public.pet_medical_records;
+select 'historiales', count(*)::text from public.pet_medical_records
+union all
+select 'vacunas', count(*)::text from public.pet_vaccinations
+union all
+select 'desparasitaciones', count(*)::text from public.pet_deworming;
 
 
  
@@ -610,7 +664,7 @@ begin
     from pg_policies
     where schemaname='public'
       and tablename in ('profiles','pets','services_catalog','appointment_requests',
-                        'pet_medical_records','staff_activation_codes','audit_events')
+                        'pet_medical_records','pet_vaccinations','pet_deworming','staff_activation_codes','audit_events')
   loop
     execute format('drop policy %I on %I.%I',p.policyname,p.schemaname,p.tablename);
   end loop;
@@ -621,6 +675,8 @@ alter table public.pets enable row level security;
 alter table public.services_catalog enable row level security;
 alter table public.appointment_requests enable row level security;
 alter table public.pet_medical_records enable row level security;
+alter table public.pet_vaccinations enable row level security;
+alter table public.pet_deworming enable row level security;
 alter table public.staff_activation_codes enable row level security;
 alter table public.audit_events enable row level security;
 
@@ -651,19 +707,23 @@ create policy records_select on public.pet_medical_records for select to authent
   using (public.is_staff() or exists(
     select 1 from public.pets p where p.id=pet_id and p.owner_id=auth.uid()
   ));
+create policy records_vaccinations_select on public.pet_vaccinations for select to authenticated
+  using (public.is_staff() or exists(select 1 from public.pets p where p.id=pet_id and p.owner_id=auth.uid()));
+create policy records_deworming_select on public.pet_deworming for select to authenticated
+  using (public.is_staff() or exists(select 1 from public.pets p where p.id=pet_id and p.owner_id=auth.uid()));
 create policy audit_staff_read on public.audit_events for select to authenticated
   using (public.is_staff());
 
 revoke all on public.profiles, public.pets, public.services_catalog,
   public.appointment_requests, public.pet_medical_records,
-  public.staff_activation_codes, public.audit_events from anon, authenticated;
+  public.pet_vaccinations, public.pet_deworming, public.staff_activation_codes, public.audit_events from anon, authenticated;
 
 grant select on public.services_catalog to anon, authenticated;
 grant select on public.profiles to authenticated;
 grant update(full_name,phone,address) on public.profiles to authenticated;
 grant select,insert,update,delete on public.pets to authenticated;
 grant select,insert on public.appointment_requests to authenticated;
-grant select on public.pet_medical_records, public.audit_events to authenticated;
+grant select on public.pet_medical_records, public.pet_vaccinations, public.pet_deworming, public.audit_events to authenticated;
 
 -- El rol nunca puede modificarse desde el cliente.
 revoke update(role) on public.profiles from authenticated, anon;
