@@ -471,3 +471,42 @@ body.guest .gmain{max-width:1180px;margin:0 auto;padding:clamp(1rem,3vw,2.2rem)}
 @media(max-width:899px){.guest-hero{grid-template-columns:1fr;min-height:0;padding:1.15rem}.guest-hero-art{height:105px;justify-content:end}.guest-hero-art img{max-width:190px}.home-service-grid{grid-template-columns:1fr}.home-lower{grid-template-columns:1fr}.tip-row{grid-template-columns:1fr}.section-head.compact{align-items:start;flex-direction:column}.guest-callout{align-items:start;flex-direction:column}.service-tile{grid-template-columns:58px 1fr;padding:.7rem}.service-tile-icon{width:56px;height:56px}.service-tile-icon img{width:38px;height:38px}.guest .top .net{display:none}}
 @media(max-width:380px){.quick-links{grid-template-columns:1fr}.home-service{padding:.55rem}.home-service-ico{width:36px;height:36px}}
 @media(max-width:899px){.client-home .home-service-grid{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;padding:.15rem .05rem .65rem;scrollbar-width:thin}.client-home .home-service{flex:0 0 min(84vw,310px);scroll-snap-align:start}.client-home .home-cats{overflow-x:auto;flex-wrap:nowrap}.client-home .home-cats .chip{flex:none}}
+
+/* V28 · navegación real, subdivisiones y experiencia móvil */
+body.app .top{gap:.65rem}
+body.app .menu-btn{display:none;border:0;background:var(--mint);color:var(--forest);width:2.35rem;height:2.35rem;border-radius:13px;cursor:pointer}
+body.app .side{gap:.25rem}
+body.app .side .side-head{display:flex;align-items:center;justify-content:space-between;padding:.55rem .55rem .9rem;border-bottom:1px solid var(--line);margin-bottom:.35rem}
+body.app .side .side-head b{display:block;font-size:.9rem;letter-spacing:.08em;color:var(--forest)}
+body.app .side .side-head small{display:block;color:var(--muted);font-size:.72rem;margin-top:.12rem}
+body.app .side .side-close{display:none;border:0;background:var(--mint);color:var(--forest);width:2.2rem;height:2.2rem;border-radius:50%;font-size:1.35rem}
+body.app .side .navgrp{padding:.15rem 0 .35rem;margin:0}
+body.app .side .navgrp summary{padding:.55rem .8rem;font-size:.68rem;letter-spacing:.1em}
+body.app .side .navgrp .nav-btn{width:100%;min-height:42px}
+body.app .side .who{margin-top:auto}
+body.app .side .side-logout{color:#a84f42;border-top:1px solid var(--line);border-radius:0;margin-top:.3rem;padding-top:.85rem}
+body.app .side-backdrop{display:none}
+body.app .dock{display:none}
+.home-subnav{display:flex;gap:.45rem;overflow-x:auto;padding:.15rem .05rem .7rem;margin-bottom:.65rem;scrollbar-width:none}
+.home-subnav::-webkit-scrollbar,.service-filters::-webkit-scrollbar{display:none}
+.home-panel{animation:fadeUp .25s ease both}.home-panel[hidden]{display:none!important}
+.home-two{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}.home-two>.card{min-width:0}
+.pet-mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;margin:.8rem 0 1rem}.pet-mini{display:grid;justify-items:start;gap:.2rem;text-align:left;padding:.85rem}.pet-mini span{font-size:1.55rem}.pet-mini small{color:var(--muted)}
+.service-gallery{display:flex;gap:.4rem;padding:.55rem .8rem 0;overflow-x:auto;scrollbar-width:thin}.service-thumb{border:1px solid var(--line);padding:0;width:64px;height:48px;flex:0 0 64px;border-radius:9px;overflow:hidden;background:var(--mint);cursor:zoom-in}.service-thumb img{width:100%;height:100%;object-fit:cover}.service-photo{cursor:zoom-in}.service-photo img{object-fit:cover}.service-copy details{padding:.35rem 0}.service-copy .actions{flex-wrap:wrap}
+.advances-modal{min-width:0}.advances-head h2{margin:.25rem 0}.adv-tabs{display:flex;gap:.45rem;overflow-x:auto;padding:.5rem 0}.adv-scroll{max-height:min(48vh,430px);overflow:auto;overscroll-behavior:contain;padding:.4rem .25rem .8rem;border:1px solid var(--line);border-radius:14px}.adv-week{padding:.75rem}.adv-week h3{margin:.65rem 0}.adv-week ul{padding-left:1.2rem;display:grid;gap:.6rem}.adv-week li{line-height:1.45}.photo-viewer img{width:100%;max-width:100%;max-height:70vh;object-fit:contain}
+@media(max-width:899px){
+ body.app{grid-template-rows:auto minmax(0,1fr);height:100dvh;overflow:hidden}
+ body.app .menu-btn{display:grid;place-items:center;flex:none}
+ body.app .side{display:flex;position:fixed;z-index:121;left:0;top:0;bottom:0;width:min(86vw,330px);padding:calc(.8rem + env(safe-area-inset-top)) .85rem calc(.8rem + env(safe-area-inset-bottom));background:var(--card);border-right:1px solid var(--line);box-shadow:18px 0 50px rgba(0,0,0,.2);transform:translateX(-110%);transition:transform .28s ease;overflow-y:auto;overscroll-behavior:contain}
+ body.app .side.is-open{transform:translateX(0)}body.app .side .side-close{display:block}
+ body.app .side-backdrop{display:block;position:fixed;inset:0;z-index:120;background:rgba(10,24,17,.48);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+ body.app.menu-open .side-backdrop{opacity:1;visibility:visible}
+ body.app .dock{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--card);border-top:1px solid var(--line);padding:.3rem .25rem calc(.3rem + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(20,45,32,.08)}
+ body.app .dock .nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-width:0;min-height:48px;padding:.25rem .05rem;font-size:.64rem;text-align:center;white-space:nowrap}
+ body.app .dock .nav-btn .e{font-size:1.05rem}body.app main#main{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ body.app .side .navgrp .nav-btn{justify-content:flex-start;font-size:.9rem}
+ .home-two{grid-template-columns:1fr}.pet-mini-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){.service-grid{grid-template-columns:1fr}.service-photo{height:190px}.service-thumb{width:72px;height:52px;flex-basis:72px}.home-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}.home-stats .stat{padding:.7rem .35rem}.home-stats .stat b{font-size:1.45rem}.home-subnav .chip{flex:none}.home-two{gap:.65rem}.tip-row{grid-template-columns:1fr 1fr}.tip-card{padding:.7rem}.adv-scroll{max-height:45dvh}}
+@media(max-width:370px){body.app .top{gap:.3rem}body.app .top .brand span{font-size:.68rem}body.app .top .icon-btn{width:2rem;height:2rem}.tip-row{grid-template-columns:1fr}}

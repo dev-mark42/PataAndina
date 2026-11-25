@@ -9,7 +9,25 @@
   const uid = session.user.id;
   sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') location.replace('./index.html'); });
   P.initTheme($('#themeBtn')); P.initPWA($('#installBtn')); P.initNet($('#net'));
-  let logoTaps=0, logoReset=null; const logo=$('#brandLogo'); if(logo){logo.addEventListener('click',()=>{logoTaps++; clearTimeout(logoReset); logoReset=setTimeout(()=>logoTaps=0,2200); if(logoTaps===7) P.toast('Un toque más para ver los avances…'); if(logoTaps>=8){logoTaps=0; P.modal('<h2>🐾 Avances de Pata Andina</h2><p>Panel de presentación del sistema.</p><div class="progress-list"><p>✓ Acceso, registro y recuperación de contraseña</p><p>✓ Perfiles y gestión de mascotas</p><p>✓ Catálogo y especialidades</p><p>✓ Reserva de citas con validación de horarios</p><p>✓ Historial médico y atención del personal</p><p>✓ PWA adaptable a móvil y escritorio</p><p>✓ Seguridad por roles y políticas RLS</p></div><div class="actions"><button class="btn primary" data-close>Continuar</button></div>');}}); }
+  // Avances de presentación: se desbloquean con ocho toques al logotipo.
+  let logoTaps = 0, logoReset = null;
+  const logo = $('#brandLogo');
+  if (logo) logo.addEventListener('click', () => {
+    logoTaps++; clearTimeout(logoReset);
+    logoReset = setTimeout(() => { logoTaps = 0; }, 2600);
+    if (logoTaps === 7) P.toast('Un toque más para abrir los avances de las 3 semanas.');
+    if (logoTaps === 8) {
+      logoTaps = 0;
+      P.modal(`<div class="advances-modal"><div class="advances-head"><span class="eyebrow">PRESENTACIÓN DEL PROYECTO</span><h2>🐾 Avances de Pata Andina</h2><p>Resumen organizado por las tres semanas de desarrollo.</p></div><div class="adv-tabs" role="tablist"><button class="chip active" data-adv-tab="1">Semana 1</button><button class="chip" data-adv-tab="2">Semana 2</button><button class="chip" data-adv-tab="3">Semana 3</button></div><div class="adv-scroll" id="advContent"><section class="adv-week"><span class="badge">SEMANA 1</span><h3>Base y experiencia visual</h3><ul><li>Identidad visual Pata Andina, paleta verde, crema y terracota.</li><li>Login, registro, recuperación y validaciones de formularios.</li><li>Diseño adaptable, tema claro/oscuro y animaciones.</li><li>Configuración PWA, iconos y caché inicial.</li></ul></section></div><div class="actions"><button class="btn primary" data-close>Continuar</button></div></div>`, modal => {
+        const data = {
+          1: ['Base y experiencia visual', ['Identidad visual Pata Andina, paleta verde, crema y terracota.','Login, registro, recuperación y validaciones de formularios.','Diseño adaptable, tema claro/oscuro y animaciones.','Configuración PWA, iconos y caché inicial.']],
+          2: ['Funciones veterinarias', ['Perfiles de tutores y gestión de mascotas.','Catálogo de servicios, especialidades y fichas informativas.','Reserva de citas por mascota, servicio, fecha y horario.','Mis citas, estados, cancelaciones e historial médico.']],
+          3: ['Integración y presentación', ['Panel del personal y registro de atenciones.','Seguridad por roles y políticas RLS de Supabase.','Navegación por subdivisiones, menú móvil y cierre de sesión.','Pruebas de interfaz, galería de servicios y ajustes PWA.']]
+        };
+        modal.addEventListener('click', ev => { const b=ev.target.closest('[data-adv-tab]'); if(!b)return; modal.querySelectorAll('[data-adv-tab]').forEach(x=>x.classList.toggle('active',x===b)); const [title,items]=data[b.dataset.advTab]; modal.querySelector('#advContent').innerHTML=`<section class="adv-week"><span class="badge">SEMANA ${b.dataset.advTab}</span><h3>${title}</h3><ul>${items.map(x=>`<li>${x}</li>`).join('')}</ul></section>`; });
+      });
+    }
+  });
   P.onNet = on => { let b = $('#offBar'); if (!on && !b) { b = document.createElement('div'); b.id = 'offBar'; b.className = 'offline-bar'; b.textContent = 'Sin conexión: puedes ver datos guardados, pero no reservar ni editar.'; $('#main').prepend(b); } if (on && b) b.remove(); };
 
   const CATS = { consulta: 'Consultas', prevencion: 'Prevención', procedimientos: 'Procedimientos', diagnostico: 'Diagnóstico', bienestar: 'Bienestar' };
@@ -35,32 +53,46 @@
 
   /* ---------- Navegación ---------- */
   const NAV = [
-    { id: 'inicio', t: 'Inicio', e: '🏠' }, { id: 'reservar', t: 'Reservar', e: '📅' }, { id: 'turnos', t: 'Mis citas', e: '🗓️' },
-    { id: 'mascotas', t: 'Mascotas', e: '🐶' }, { id: 'historial', t: 'Historial', e: '📋' }, { id: 'servicios', t: 'Servicios', e: '💉' },
-    { id: 'personal', t: 'Personal', e: '🩺', staff: true }, { id: 'perfil', t: 'Perfil', e: '👤' }
+    { id: 'inicio', t: 'Inicio', e: '🏠', group: 'Principal' },
+    { id: 'servicios', t: 'Catálogo y especialidades', e: '🩺', group: 'Principal' },
+    { id: 'mascotas', t: 'Mis mascotas', e: '🐾', group: 'Mis mascotas' },
+    { id: 'historial', t: 'Historial médico', e: '📋', group: 'Mis mascotas' },
+    { id: 'reservar', t: 'Solicitar cita', e: '📅', group: 'Citas' },
+    { id: 'turnos', t: 'Mis citas', e: '🗓️', group: 'Citas' },
+    { id: 'personal', t: 'Panel veterinario', e: '🩺', group: 'Clínica', staff: true },
+    { id: 'perfil', t: 'Mi perfil', e: '👤', group: 'Cuenta' }
   ];
-  const DOCK = ['inicio', 'reservar', 'turnos', 'mascotas'];
+  const DOCK = ['inicio', 'servicios', 'mascotas', 'reservar'];
   let current = '', arg = null;
+  const closeSide = () => { document.body.classList.remove('menu-open'); $('#side')?.classList.remove('is-open'); $('#menuBtn')?.setAttribute('aria-expanded','false'); };
+  const openSide = () => { document.body.classList.add('menu-open'); $('#side')?.classList.add('is-open'); $('#menuBtn')?.setAttribute('aria-expanded','true'); };
+  $('#menuBtn')?.addEventListener('click', () => document.body.classList.contains('menu-open') ? closeSide() : openSide());
+  $('#sideClose')?.addEventListener('click', closeSide);
+  $('#sideBackdrop')?.addEventListener('click', closeSide);
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeSide(); });
   function buildNav() {
     const items = NAV.filter(n => !n.staff || S.staff);
     const btn = n => `<button class="nav-btn" data-nav="${n.id}"><span class="e">${n.e}</span><span>${n.t}</span></button>`;
-    $('#side').innerHTML = items.map(btn).join('') + `<div class="who">${esc(S.profile.full_name)}${S.staff ? ' · 🩺 Personal' : ''}</div>`;
+    const groups = [...new Set(items.map(n=>n.group))];
+    const sideGroups = groups.map((g,i)=>`<details class="navgrp" ${i<2?'open':''}><summary>${g}</summary>${items.filter(n=>n.group===g).map(btn).join('')}</details>`).join('');
+    $('#side').innerHTML = `<div class="side-head"><div><b>PATA ANDINA</b><small>Menú de tu cuenta</small></div><button class="side-close" id="sideClose" type="button" aria-label="Cerrar menú">×</button></div>${sideGroups}<div class="who"><span class="who-avatar">${esc((S.profile.full_name||'U').slice(0,1).toUpperCase())}</span><span><b>${esc(S.profile.full_name)}</b><small>${S.staff?'Personal veterinario':'Cuenta de cliente'}</small></span></div><button class="nav-btn side-logout" data-logout><span class="e">⎋</span><span>Cerrar sesión</span></button>`;
+    $('#sideClose')?.addEventListener('click', closeSide);
     $('#dock').innerHTML = items.filter(n => DOCK.includes(n.id)).map(btn).join('') + `<button class="nav-btn" data-nav="__more"><span class="e">⋯</span><span>Más</span></button>`;
   }
   document.addEventListener('click', e => {
     const n = e.target.closest('[data-nav]'); if (!n) return; const id = n.dataset.nav;
     $('.sheet') && $('.sheet').remove();
     if (id === '__more') return moreSheet();
-    go(id);
+    closeSide(); go(id);
   });
   function moreSheet() {
     const items = NAV.filter(n => (!n.staff || S.staff) && !DOCK.includes(n.id));
     const s = document.createElement('div'); s.className = 'sheet';
-    s.innerHTML = items.map(n => `<button class="btn block" data-nav="${n.id}">${n.e} ${n.t}</button>`).join('') + `<button class="btn ghost block" data-logout>⎋ Salir</button>`;
+    s.innerHTML = `<div class="sheet__t">OTRAS SECCIONES</div><div class="sheet__g">${items.map(n => `<button class="btn block" data-nav="${n.id}">${n.e} ${n.t}</button>`).join('')}</div><button class="btn ghost block" data-logout>⎋ Cerrar sesión</button>`;
     document.body.appendChild(s); setTimeout(() => document.addEventListener('click', function f(ev) { if (!s.contains(ev.target)) { s.remove(); document.removeEventListener('click', f); } }), 0);
   }
   document.addEventListener('click', e => { if (e.target.closest('[data-logout]') || e.target.closest('#logoutTop')) logout(); });
-  async function logout() { if (!await P.confirm('¿Cerrar sesión?', 'Tendrás que ingresar otra vez para ver tus mascotas.', 'Cerrar sesión')) return; P.cache.clear(); await sb.auth.signOut(); location.replace('./index.html'); }
+  async function logout() { if (!await P.confirm('¿Cerrar sesión?', 'Se cerrará esta sesión en este dispositivo.', 'Cerrar sesión')) return; P.cache.clear(); try { const { error } = await sb.auth.signOut({ scope: 'local' }); if (error) console.warn('Supabase signOut:', error.message); } catch (e) { console.warn('Logout:', e); } finally { try { Object.keys(localStorage).filter(k=>k.startsWith('sb-') || k.startsWith('pata:')).forEach(k=>localStorage.removeItem(k)); } catch (_) {} location.replace('./index.html'); } }
   async function go(id, a) {
     if (!NAV.some(n => n.id === id && (!n.staff || S.staff))) id = 'inicio';
     current = id; arg = a || null; if (location.hash !== '#' + id) history.pushState(null, '', '#' + id);
@@ -83,26 +115,24 @@
   async function vInicio(m) {
     await Promise.all([loadPets(), loadAppts(), loadServices()]);
     const h = hourLP(), hi = h < 12 ? '¡Buenos días' : h < 19 ? '¡Buenas tardes' : '¡Buenas noches';
-    const upcoming = S.appts.filter(active).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
-    const nxt = upcoming[0], done = S.appts.filter(a => a.status === 'completada').length;
-    const art = S.pets[0] ? ART.forSpecies(S.pets[0].species) : ART.cat();
+    const upcoming = S.appts.filter(active).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+    const nxt = upcoming[0], done = S.appts.filter(a=>a.status==='completada').length;
     const top = S.services.filter(x=>x.active!==false).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).slice(0,10);
     const cats = [['todas','Todo'],...Object.entries(CATS)];
+    const topCards = list => list.map(s=>`<article class="home-service"><span class="home-service-ico"><img src="./imagenes/${esc(s.icon||'consulta')}.svg" alt="" loading="lazy"></span><div class="home-service-copy"><span class="tag">${esc(CATS[s.category]||s.category)}</span><b>${esc(s.name)}</b><small>${esc(s.price_label)} · ${s.duration_min} min</small></div><button class="icon-btn home-book" data-home-book="${esc(s.id)}" aria-label="Reservar ${esc(s.name)}">＋</button></article>`).join('');
     m.innerHTML = `<div class="view client-home">
-      <div class="greeting"><div><span class="eyebrow">PATA ANDINA VET</span><h2>${hi}, ${esc(S.profile.full_name.split(' ')[0])}!</h2><p>${S.pets.length ? 'Un cuidado especial para ' + S.pets.map(p => esc(p.name)).join(', ') + '.' : 'Registra a tu primera mascota y empieza su cuidado.'}</p><div class="actions"><button class="btn accent" data-nav="reservar">＋ Reservar cita</button><button class="btn ghost hero-ghost" data-nav="mascotas">Mis mascotas</button></div></div><div class="pw bob">${art}</div></div>
-      <div class="cols3 home-stats"><div class="card stat lift"><b class="count" data-to="${S.pets.length}">0</b><span>Mascotas</span></div><div class="card stat lift"><b class="count" data-to="${upcoming.length}">0</b><span>Citas activas</span></div><div class="card stat lift"><b class="count" data-to="${done}">0</b><span>Atenciones</span></div></div>
-      <section class="home-section"><div class="section-head compact"><div><span class="eyebrow">RECOMENDADOS</span><h2>Top 10 para cuidar mejor</h2><p>Servicios destacados para el bienestar de tu mascota.</p></div><button class="btn ghost sm" data-nav="servicios">Ver catálogo completo →</button></div>
-      <div class="chips home-cats" id="homeCats">${cats.map(([k,l],i)=>`<button class="chip ${i===0?'active':''}" data-home-cat="${k}">${l}</button>`).join('')}</div>
-      <div class="home-service-grid" id="homeTop">${top.map(s=>`<article class="home-service"><span class="home-service-ico"><img src="./imagenes/${esc(s.icon||'consulta')}.svg" alt="" loading="lazy"></span><div class="home-service-copy"><span class="tag">${esc(CATS[s.category]||s.category)}</span><b>${esc(s.name)}</b><small>${esc(s.price_label)} · ${s.duration_min} min</small></div><button class="icon-btn home-book" data-home-book="${esc(s.id)}" aria-label="Reservar ${esc(s.name)}">＋</button></article>`).join('')}</div>
-      </section>
-      <div class="cols home-lower"><div class="card home-next"><span class="eyebrow">AGENDA</span><h3>📅 Próxima cita</h3>${nxt ? `<dl class="kv"><dt>Servicio</dt><dd>${esc(nxt.service.name)}</dd><dt>Mascota</dt><dd>${esc(nxt.pet.name)}</dd><dt>Cuándo</dt><dd>${fmtDate(nxt.starts_at)} · ${fmtTime(nxt.starts_at)}</dd><dt>Estado</dt><dd>${badge(nxt.status)}</dd></dl><div class="actions"><button class="btn sm" data-nav="turnos">Ver mis citas</button></div>` : `<p class="hint">Todavía no tienes citas próximas.</p><button class="btn sm accent" data-nav="reservar">Elegir horario</button>`}</div>
-      <div class="card"><span class="eyebrow">ACCESO RÁPIDO</span><h3>Tu espacio</h3><div class="quick-links"><button class="quick-link" data-nav="mascotas"><span>🐾</span><b>Mascotas</b><small>Perfiles y datos</small></button><button class="quick-link" data-nav="historial"><span>🩺</span><b>Historial</b><small>Controles médicos</small></button><button class="quick-link" data-nav="turnos"><span>🗓️</span><b>Mis citas</b><small>Seguimiento</small></button></div></div></div>
-      <section class="home-section tips-section"><div class="section-head compact"><div><span class="eyebrow">CONSEJOS VETERINARIOS</span><h2>Pequeños cuidados, grandes cambios</h2></div></div><div class="tip-row">${TIPS.slice(0,3).map(t=>`<div class="tip-card"><span>${t[0]}</span><b>${t[1]}</b><small>${t[2]}</small></div>`).join('')}</div></section>
+      <div class="home-subnav" role="tablist" aria-label="Secciones de inicio"><button class="chip active" data-home-panel="resumen">Resumen</button><button class="chip" data-home-panel="top">Top 10 servicios</button><button class="chip" data-home-panel="espacio">Mi espacio</button><button class="chip" data-home-panel="consejos">Consejos</button></div>
+      <section class="home-panel active" data-panel="resumen"><div class="greeting"><div><span class="eyebrow">PATA ANDINA VET</span><h2>${hi}, ${esc((S.profile.full_name||'').split(' ')[0])}!</h2><p>${S.pets.length?'Un cuidado especial para '+S.pets.map(p=>esc(p.name)).join(', ')+'.':'Registra a tu primera mascota y empieza su cuidado.'}</p><div class="actions"><button class="btn accent" data-nav="reservar">＋ Solicitar cita</button><button class="btn ghost hero-ghost" data-nav="mascotas">Mis mascotas</button></div></div><div class="pw bob">${S.pets[0]?ART.forSpecies(S.pets[0].species):ART.cat()}</div></div>
+      <div class="cols3 home-stats"><div class="card stat"><b>${S.pets.length}</b><span>Mascotas</span></div><div class="card stat"><b>${upcoming.length}</b><span>Citas activas</span></div><div class="card stat"><b>${done}</b><span>Atenciones</span></div></div>
+      <div class="home-two"><article class="card home-next"><span class="eyebrow">AGENDA</span><h3>📅 Próxima cita</h3>${nxt?`<dl class="kv"><dt>Servicio</dt><dd>${esc(nxt.service?.name||'—')}</dd><dt>Mascota</dt><dd>${esc(nxt.pet?.name||'—')}</dd><dt>Cuándo</dt><dd>${fmtDate(nxt.starts_at)} · ${fmtTime(nxt.starts_at)}</dd><dt>Estado</dt><dd>${badge(nxt.status)}</dd></dl><button class="btn sm" data-nav="turnos">Ver mis citas</button>`:`<p class="hint">Todavía no tienes citas próximas.</p><button class="btn sm accent" data-nav="reservar">Elegir horario</button>`}</article><article class="card"><span class="eyebrow">ACCESOS RÁPIDOS</span><h3>Tu espacio</h3><div class="quick-links"><button class="quick-link" data-nav="mascotas"><span>🐾</span><b>Mascotas</b><small>Perfiles</small></button><button class="quick-link" data-nav="historial"><span>🩺</span><b>Historial</b><small>Controles</small></button><button class="quick-link" data-nav="turnos"><span>🗓️</span><b>Citas</b><small>Seguimiento</small></button></div></article></div></section>
+      <section class="home-panel" data-panel="top" hidden><div class="section-head compact"><div><span class="eyebrow">RECOMENDADOS</span><h2>Top 10 servicios</h2><p>Elige una especialidad o explora los más solicitados.</p></div><button class="btn ghost sm" data-nav="servicios">Catálogo completo →</button></div><div class="chips home-cats" id="homeCats">${cats.map(([k,l],i)=>`<button class="chip ${i===0?'active':''}" data-home-cat="${k}">${l}</button>`).join('')}</div><div class="home-service-grid" id="homeTop">${topCards(top)}</div></section>
+      <section class="home-panel" data-panel="espacio" hidden><div class="section-head compact"><div><span class="eyebrow">TUS MASCOTAS</span><h2>Mi espacio</h2><p>Accede a la información importante sin recorrer una página larga.</p></div><button class="btn primary sm" data-nav="mascotas">Gestionar mascotas</button></div><div class="pet-mini-grid">${S.pets.slice(0,6).map(p=>`<button class="pet-mini card" data-open-pet="${p.id}"><span>${p.species==='gato'?'🐱':p.species==='perro'?'🐶':'🐾'}</span><b>${esc(p.name)}</b><small>${esc(p.breed||p.species)}</small></button>`).join('')||'<p class="hint">Todavía no tienes mascotas registradas.</p>'}</div><div class="quick-links"><button class="quick-link" data-nav="historial"><span>🩺</span><b>Historial médico</b><small>Diagnósticos y controles</small></button><button class="quick-link" data-nav="turnos"><span>🗓️</span><b>Mis citas</b><small>Estados y horarios</small></button><button class="quick-link" data-nav="perfil"><span>👤</span><b>Mi perfil</b><small>Datos de cuenta</small></button></div></section>
+      <section class="home-panel" data-panel="consejos" hidden><div class="section-head compact"><div><span class="eyebrow">BIENESTAR</span><h2>Consejos veterinarios</h2><p>Pequeños cuidados, grandes cambios.</p></div></div><div class="tip-row">${TIPS.map(t=>`<article class="tip-card"><span>${t[0]}</span><b>${t[1]}</b><small>${t[2]}</small></article>`).join('')}</div></section>
     </div>`;
-    $$('.count', m).forEach(c => P.countUp(c, +c.dataset.to));
-    const homeList=(cat)=>{const l=cat==='todas'?top:top.filter(x=>x.category===cat);$('#homeTop',m).innerHTML=l.map(s=>`<article class="home-service"><span class="home-service-ico"><img src="./imagenes/${esc(s.icon||'consulta')}.svg" alt="" loading="lazy"></span><div class="home-service-copy"><span class="tag">${esc(CATS[s.category]||s.category)}</span><b>${esc(s.name)}</b><small>${esc(s.price_label)} · ${s.duration_min} min</small></div><button class="icon-btn home-book" data-home-book="${esc(s.id)}" aria-label="Reservar ${esc(s.name)}">＋</button></article>`).join('')||'<p class="hint">No hay recomendaciones en esta categoría.</p>';};
-    $('#homeCats',m).onclick=e=>{const b=e.target.closest('[data-home-cat]');if(!b)return;$$('[data-home-cat]',m).forEach(x=>x.classList.toggle('active',x===b));homeList(b.dataset.homeCat);};
-    $('#homeTop',m).onclick=e=>{const b=e.target.closest('[data-home-book]');if(b)go('reservar',{service:b.dataset.homeBook});};
+    const showPanel = id => { $$('.home-panel',m).forEach(x=>{x.hidden=x.dataset.panel!==id;x.classList.toggle('active',!x.hidden);}); $$('[data-home-panel]',m).forEach(x=>x.classList.toggle('active',x.dataset.homePanel===id)); };
+    m.addEventListener('click',e=>{const t=e.target.closest('[data-home-panel]');if(t)showPanel(t.dataset.homePanel);const b=e.target.closest('[data-home-cat]');if(b){$$('[data-home-cat]',m).forEach(x=>x.classList.toggle('active',x===b));const filtered=b.dataset.homeCat==='todas'?top:top.filter(x=>x.category===b.dataset.homeCat);$('#homeTop',m).innerHTML=topCards(filtered)||'<p class="hint">No hay servicios en esta especialidad.</p>';}});
+    $('#homeTop',m)?.addEventListener('click',e=>{const b=e.target.closest('[data-home-book]');if(b)go('reservar',{service:b.dataset.homeBook});});
+    m.addEventListener('click',e=>{const p=e.target.closest('[data-open-pet]');if(p)go('mascotas');});
   }
 
   /* ======================= MASCOTAS ======================= */
@@ -289,21 +319,18 @@
 
   /* ======================= SERVICIOS ======================= */
   async function vServicios(m) {
-    await loadServices(); let cat = 'todas', tab = 'svc', foods = null;
-    async function draw() {
-      if (tab === 'food' && !foods) { try { foods = await (await fetch('./data/productos-gatos.json')).json(); } catch (_) { foods = []; } }
-      const list = S.services.filter(s => cat === 'todas' || s.category === cat);
-      m.innerHTML = `<div class="view"><h2>Servicios</h2><div class="tabs"><button class="tab ${tab === 'svc' ? 'active' : ''}" data-tab="svc">Servicios (${S.services.length})</button><button class="tab ${tab === 'food' ? 'active' : ''}" data-tab="food">Comida para gatos</button></div>
-      <div class="pane">${tab === 'svc' ? `<div class="chips">${['todas', ...Object.keys(CATS)].map(c => `<button class="chip ${cat === c ? 'active' : ''}" data-cat="${c}">${c === 'todas' ? 'Todos' : CATS[c]}</button>`).join('')}</div>
-        <div class="grid">${list.map(s => `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">${icoImg(s)}</span><span class="grow"><b>${esc(s.name)}</b><span class="sub">${esc(s.price_label)} · ${s.duration_min} min</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(s.description)}</p><p class="hint" style="margin:.4rem 0">${esc(s.details || '')}</p><dl class="kv"><dt>Para</dt><dd>${esc(s.species || '')}</dd></dl><div class="actions"><button class="btn sm primary" data-book="${s.id}">Reservar este servicio</button></div></div></div></div></div>`).join('')}</div>`
-        : `<div class="grid">${(foods || []).map(f => `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">🐱</span><span class="grow"><b>${esc(f.name)}</b><span class="sub">${esc(f.kind)}</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(f.description)}</p><p class="hint" style="margin-top:.4rem">💡 ${esc(f.guidance)}</p></div></div></div></div>`).join('') || empty('Catálogo no disponible sin conexión.')}</div>`}</div></div>`;
-    }
-    m.onclick = e => {
-      const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; return draw(); }
-      const c = e.target.closest('[data-cat]'); if (c) { cat = c.dataset.cat; return draw(); }
-      const b = e.target.closest('[data-book]'); if (b) go('reservar', { service: b.dataset.book });
-    };
-    draw();
+    await loadServices(); let cat='todas', tab='svc', foods=null;
+    const remotePhotos = [
+      'https://rgs.veterian.com/uploads/blog/kopek_muayene_oluyor_kediyle_beraber_6a2053a7621c4.jpg',
+      'https://img.bemypet.kr/content/sites/14/2025/09/25095949/image-28-1024x683.png',
+      'https://dranimal.com/images/blog/o-que-e-avaliado-em-consulta-veterinaria-rotina-caes-gatos.jpg'
+    ];
+    const localPhotos = ['./imagenes/vet-consulta.webp','./imagenes/vet-evaluacion.webp','./imagenes/vet-diagnostico.webp','./imagenes/vet-cuidados.webp','./imagenes/vet-atencion-felina.webp','./imagenes/vet-portada.webp'];
+    const photoSet = s => { const base=s.category==='diagnostico'?2:s.category==='bienestar'?3:s.category==='prevencion'?1:0; return [localPhotos[base],localPhotos[(base+1)%localPhotos.length],localPhotos[(base+2)%localPhotos.length]]; };
+    function zoomPhoto(src,title){P.modal(`<div class="photo-viewer"><div class="section-head compact"><h2>${esc(title)}</h2><button class="icon-btn" data-close aria-label="Cerrar">×</button></div><img src="${esc(src)}" alt="${esc(title)}" onerror="this.src='./imagenes/vet-consulta.webp'"><p class="hint">Vista ampliada · Pata Andina Vet</p></div>`);}
+    function serviceCard(s){const photos=photoSet(s);return `<article class="service-card"><button class="service-photo" type="button" data-zoom="${esc(photos[0])}" data-title="${esc(s.name)}"><img src="${esc(photos[0])}" alt="${esc(s.name)}" loading="lazy" onerror="this.src='./imagenes/vet-consulta.webp'"><span>⌕ Ampliar</span></button><div class="service-gallery">${photos.map((src,i)=>`<button type="button" class="service-thumb" data-zoom="${esc(src)}" data-title="${esc(s.name)} · Foto ${i+1}" aria-label="Ampliar foto ${i+1} de ${esc(s.name)}"><img src="${esc(src)}" alt="Foto ${i+1}" loading="lazy" onerror="this.src='./imagenes/vet-consulta.webp'"></button>`).join('')}</div><div class="service-copy"><div class="service-meta"><span>${esc(CATS[s.category]||s.category)}</span><b>${esc(s.price_label)}</b></div><h3>${esc(s.name)}</h3><p>${esc(s.description)}</p><details><summary>Ver detalles y recomendaciones</summary><p>${esc(s.details||'La atención se define tras la evaluación veterinaria.')}</p><small>Dirigido a: ${esc(s.species||'Perros y gatos')} · ${s.duration_min} min</small></details><div class="actions"><button class="btn primary sm" data-book="${esc(s.id)}">Solicitar cita</button><button class="btn ghost sm" data-zoom="${esc(photos[0])}" data-title="${esc(s.name)}">Ver fotos</button></div></div></article>`;}
+    async function draw(){if(tab==='food'&&!foods){try{foods=await(await fetch('./data/productos-gatos.json')).json();}catch(_){foods=[];}}const list=S.services.filter(s=>cat==='todas'||s.category===cat);m.innerHTML=`<div class="view"><div class="section-head compact"><div><span class="eyebrow">CATÁLOGO VETERINARIO</span><h2>Servicios y especialidades</h2><p>Explora cada servicio, revisa sus fotografías y consulta sus detalles.</p></div></div><div class="tabs"><button class="tab ${tab==='svc'?'active':''}" data-tab="svc">Servicios (${S.services.length})</button><button class="tab ${tab==='food'?'active':''}" data-tab="food">Nutrición y alimentos</button></div><div class="pane">${tab==='svc'?`<div class="chips service-filters">${['todas',...Object.keys(CATS)].map(c=>`<button class="chip ${cat===c?'active':''}" data-cat="${c}">${c==='todas'?'Todas las especialidades':CATS[c]}</button>`).join('')}</div><div class="service-grid">${list.map(serviceCard).join('')||empty('No hay servicios en esta especialidad.')}</div>`:`<div class="grid">${(foods||[]).map(f=>`<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">🐱</span><span class="grow"><b>${esc(f.name)}</b><span class="sub">${esc(f.kind)}</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(f.description)}</p><p class="hint">💡 ${esc(f.guidance)}</p></div></div></div></div>`).join('')||empty('Catálogo no disponible sin conexión.')}</div>`}</div></div>`;}
+    m.onclick=e=>{const t=e.target.closest('[data-tab]');if(t){tab=t.dataset.tab;return draw();}const c=e.target.closest('[data-cat]');if(c){cat=c.dataset.cat;return draw();}const z=e.target.closest('[data-zoom]');if(z){zoomPhoto(z.dataset.zoom,z.dataset.title||'Servicio veterinario');return;}const b=e.target.closest('[data-book]');if(b)go('reservar',{service:b.dataset.book});};draw();
   }
 
   /* ======================= PERSONAL ======================= */

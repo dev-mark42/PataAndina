@@ -11,13 +11,15 @@
 </head>
 <body class="app">
   <header class="top">
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menú" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
     <button class="brand brand-trigger" id="brandLogo" type="button" aria-label="Pata Andina"><b>✚</b><span>PATA ANDINA</span></button>
     <span class="net" id="net" data-s="on"><i></i><b>En línea</b></span>
     <button class="btn sm install" id="installBtn" hidden>📲 Instalar</button>
     <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema">🌙</button>
     <button class="icon-btn" id="logoutTop" aria-label="Cerrar sesión" title="Cerrar sesión">⎋</button>
   </header>
-  <nav class="side" id="side" aria-label="Menú principal"></nav>
+  <div class="side-backdrop" id="sideBackdrop"></div>
+  <nav class="side" id="side" aria-label="Menú principal"><div class="side-head"><div><b>PATA ANDINA</b><small>Menú de tu cuenta</small></div><button class="side-close" id="sideClose" type="button" aria-label="Cerrar menú">×</button></div></nav>
   <main id="main" tabindex="-1"><div class="view"><div class="skeleton"></div><br><div class="skeleton"></div></div></main>
   <nav class="dock" id="dock" aria-label="Menú móvil"></nav>
   <script src="./js/config.js"></script>

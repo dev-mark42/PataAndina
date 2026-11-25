@@ -3,10 +3,10 @@
    - App shell precacheado: abre sin conexión (login y app).
    - Archivos propios: "stale-while-revalidate" (rápido y se actualiza solo).
    - Llamadas a Supabase (API/Auth): NUNCA se cachean (datos siempre reales y seguros). */
-const CACHE = 'pata-andina-v27-integrado-20261125';
+const CACHE = 'pata-andina-v28-menu-galeria-20261125';
 const SHELL = ['./', './index.html', './app.html', './invitado.html', './manifest.json', './css/style.css',
   './js/config.js', './js/vendor/supabase.js', './js/art.js', './js/common.js', './js/login.js', './js/app.js', './js/guest.js',
-  './icons/icon-192.png', './icons/icon-512.png', './data/productos-gatos.json',
+  './icons/icon-192.png', './icons/icon-512.png', './data/productos-gatos.json', './imagenes/vet-consulta.webp', './imagenes/vet-evaluacion.webp', './imagenes/vet-diagnostico.webp', './imagenes/vet-cuidados.webp', './imagenes/vet-atencion-felina.webp', './imagenes/vet-portada.webp',
   ...['consulta', 'control', 'curaciones', 'odontologia', 'domicilio', 'gato', 'imagenologia', 'laboratorio', 'nutricion', 'peluqueria', 'prevencion', 'vacuna', 'cirugia'].map(n => `./imagenes/${n}.svg`)];
 
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
