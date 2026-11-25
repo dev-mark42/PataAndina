@@ -58,15 +58,30 @@
   const navBtn = n => `<button class="nav-btn" data-nav="${n.id}"><span class="e">${ico(n.id)}</span><span>${n.t}</span></button>`;
   function buildNav() {
     const items = visibleNav(), groups = [...new Set(items.map(n => n.g))];
-    $('#side').innerHTML = groups.map(g => `<details class="navgrp" open><summary>${g}</summary>${items.filter(n => n.g === g).map(navBtn).join('')}</details>`).join('') + `<div class="who">${esc(S.profile.full_name)}${S.staff ? ' · Personal' : ''}</div>`;
-    $('#dock').innerHTML = items.filter(n => DOCK.includes(n.id)).map(navBtn).join('') + `<button class="nav-btn" data-nav="__more"><span class="e">${ico('mas')}</span><span>Menú</span></button>`;
+    $('#side').innerHTML = `<div class="side-head"><div><b>🐾 PATA ANDINA</b><small>Panel de ${S.staff ? 'personal' : 'cliente'}</small></div><button class="side-close" type="button" data-close-menu aria-label="Cerrar menú">×</button></div>` +
+      groups.map(g => `<details class="navgrp" open><summary>${g}</summary>${items.filter(n => n.g === g).map(navBtn).join('')}</details>`).join('') +
+      `<div class="who"><span class="who-avatar">${esc((S.profile.full_name || 'C').trim().charAt(0).toUpperCase())}</span><span><b>${esc(S.profile.full_name)}</b><small>${S.staff ? 'Personal' : 'Cuenta de cliente'}</small></span></div>`;
+    $('#dock').innerHTML = '';
   }
   document.addEventListener('click', e => {
     const n = e.target.closest('[data-nav]'); if (!n) return; const id = n.dataset.nav;
     $('.sheet') && $('.sheet').remove();
-    if (id === '__more') return moreSheet();
+    if (id === '__more') { toggleSide(true); return; }
+    toggleSide(false);
     go(id);
   });
+  function toggleSide(open) {
+    const side = $('#side'); if (!side) return;
+    const show = typeof open === 'boolean' ? open : !side.classList.contains('is-open');
+    side.classList.toggle('is-open', show); document.body.classList.toggle('menu-open', show);
+    const trigger = $('.menu-btn'); if (trigger) trigger.setAttribute('aria-expanded', String(show));
+  }
+  $('.menu-btn')?.addEventListener('click', () => toggleSide());
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-close-menu]')) toggleSide(false);
+    if (e.target.classList.contains('side-backdrop')) toggleSide(false);
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleSide(false); });
   function moreSheet() {
     const items = visibleNav(), groups = [...new Set(items.map(n => n.g))];
     const sh = document.createElement('div'); sh.className = 'sheet'; sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-label', 'Menú');

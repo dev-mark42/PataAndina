@@ -345,3 +345,42 @@ body.dark-theme .video-card em {color:#f2b59a}
 @media(max-width:760px){.process-grid{grid-template-columns:1fr 1fr}.video-grid{grid-template-columns:1fr 1fr}.process-card img{height:145px}}
 @media(max-width:430px){.process-grid,.video-grid{grid-template-columns:1fr}.process-card img{height:190px}.video-thumb{height:145px}}
 @media(prefers-reduced-motion:reduce){.pet-illustration,.spark,.video-thumb::before,.video-thumb::after{animation:none!important}}
+
+
+/* ============ v4 · navegación lateral y PWA móvil ============ */
+body.app { grid-template-columns: 252px minmax(0,1fr); }
+body.app .side { min-width:0; }
+.side-head {display:flex;align-items:center;justify-content:space-between;padding:.5rem .55rem 1rem;border-bottom:1px solid var(--line);margin-bottom:.35rem}
+.side-head b {display:block;font-size:.88rem;letter-spacing:.08em;color:var(--forest)}
+.side-head small {display:block;color:var(--muted);font-size:.72rem;margin-top:.15rem}
+.side-close {display:none;border:0;background:var(--mint);color:var(--forest);width:2.2rem;height:2.2rem;border-radius:50%;font-size:1.35rem}
+.navgrp {padding:.2rem 0 .45rem}
+.navgrp summary {list-style:none;padding:.55rem .85rem;color:var(--muted);font-size:.68rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase;cursor:pointer}
+.navgrp summary::-webkit-details-marker {display:none}
+.navgrp summary::after {content:"⌄";float:right;font-size:1rem;transition:transform .2s}
+.navgrp:not([open]) summary::after {transform:rotate(-90deg)}
+.navgrp .nav-btn {width:100%;font-size:.9rem}
+.side .who {display:flex;align-items:center;gap:.7rem;padding:1rem .55rem .35rem;border-top:1px solid var(--line)}
+.who-avatar {width:2.25rem;height:2.25rem;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--accent-soft);color:var(--forest);font-weight:900;font-size:1.05rem}
+.side .who b,.side .who small {display:block}.side .who b {color:var(--text);font-size:.8rem}.side .who small {font-size:.7rem;color:var(--muted);margin-top:.1rem}
+.side-backdrop {display:none}.menu-btn {display:none}
+@media(max-width:899px) {
+ body.app {display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"top" "main";height:100dvh;min-height:100svh;overflow:hidden}
+ body.app .top {position:sticky;top:0;min-height:58px;padding-left:max(.7rem,env(safe-area-inset-left));padding-right:max(.7rem,env(safe-area-inset-right));padding-top:calc(.45rem + env(safe-area-inset-top))}
+ body.app .menu-btn {display:grid;place-items:center;flex:none} body.app .menu-btn svg {width:1.35rem;height:1.35rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+ body.app .side {display:flex;position:fixed;z-index:101;left:0;top:0;bottom:0;width:min(86vw,320px);padding:calc(1rem + env(safe-area-inset-top)) .85rem calc(1rem + env(safe-area-inset-bottom));border:0;border-right:1px solid var(--line);box-shadow:18px 0 50px rgba(0,0,0,.18);transform:translateX(-105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);overflow-y:auto;overscroll-behavior:contain}
+ body.app .side.is-open {transform:translateX(0)} body.app .side-close {display:block}
+ body.app .side-backdrop {display:block;position:fixed;inset:0;z-index:100;background:rgba(12,25,18,.46);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
+ body.app.menu-open .side-backdrop {opacity:1;visibility:visible}
+ body.app main#main {grid-area:main;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:1rem .85rem calc(1.5rem + env(safe-area-inset-bottom))}
+ body.app .dock {display:none!important} body.app .top .brand {font-size:.78rem;letter-spacing:.04em} body.app .top .brand b {width:1.9rem;height:1.9rem} body.app .top .net {display:none} body.app .top .install {font-size:.72rem;padding:.45rem .55rem}
+ body.app .view {width:100%;max-width:100%;min-width:0} body.app .view h1,body.app .view h2 {overflow-wrap:anywhere}
+ body.app .card {min-width:0;border-radius:18px} body.app .cols,body.app .cols3 {grid-template-columns:minmax(0,1fr);gap:.75rem}
+ body.app .greeting {padding:1rem;border-radius:20px;gap:.55rem} body.app .greeting .pw {width:72px} body.app .greeting h2 {font-size:1.18rem} body.app .greeting p {font-size:.82rem}
+ body.app .stat {padding:.85rem .45rem} body.app .stat b {font-size:1.65rem} body.app .actions {flex-wrap:wrap} body.app .actions .btn {flex:1 1 130px}
+ body.app .table-wrap {max-width:100%;overflow-x:auto} body.app table {min-width:560px}
+ body.app .modal-bg {align-items:flex-end;padding:0} body.app .modal {width:100%;max-width:none;max-height:92dvh;overflow:auto;border-radius:24px 24px 0 0;padding:1.1rem 1rem calc(1.2rem + env(safe-area-inset-bottom))}
+ body.app input,body.app select,body.app textarea {font-size:16px;max-width:100%} body.app .btn,body.app .nav-btn {min-height:42px}
+}
+@media(max-width:390px) {body.app .top {gap:.35rem;padding-left:.5rem;padding-right:.5rem} body.app .top .brand span {font-size:.72rem} body.app .top .icon-btn {width:2.15rem;height:2.15rem} body.app main#main {padding-left:.7rem;padding-right:.7rem} body.app .greeting .pw {width:58px}}
+@media(display-mode:standalone) {body.app .top {padding-top:calc(.45rem + env(safe-area-inset-top))} body.app main#main {padding-bottom:calc(1.5rem + env(safe-area-inset-bottom))}}

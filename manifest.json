@@ -2,22 +2,59 @@
   "id": "./index.html",
   "name": "Pata Andina Vet | Centro Veterinario",
   "short_name": "Pata Andina",
-  "description": "Reserva citas, perfiles de mascotas e historial médico para Pata Andina Vet.",
+  "description": "Tu espacio de cliente: mascotas, citas, servicios e historial veterinario.",
   "lang": "es",
   "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "orientation": "any",
-  "background_color": "#fbfaf6",
-  "theme_color": "#315d4d",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#f7f6f1",
+  "theme_color": "#244b3b",
   "icons": [
-    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Reservar cita", "short_name": "Reservar", "url": "./app.html#reservar", "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Mis citas", "short_name": "Citas", "url": "./app.html#turnos", "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Reservar cita",
+      "short_name": "Reservar",
+      "url": "./app.html#reservar",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Mis citas",
+      "short_name": "Citas",
+      "url": "./app.html#turnos",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ],
-  "categories": ["health", "lifestyle", "utilities"]
+  "categories": [
+    "health",
+    "lifestyle",
+    "utilities"
+  ]
 }

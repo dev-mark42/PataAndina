@@ -3,7 +3,7 @@
    - App shell precacheado: abre sin conexión (login y app).
    - Archivos propios: "stale-while-revalidate" (rápido y se actualiza solo).
    - Llamadas a Supabase (API/Auth): NUNCA se cachean (datos siempre reales y seguros). */
-const CACHE = 'pata-andina-v21-invitado-20261124';
+const CACHE = 'pata-andina-v22-mobile-leftnav-20261125';
 const SHELL = ['./', './index.html', './app.html', './guest.html', './404.html', './manifest.json', './css/style.css',
   './js/config.js', './js/vendor/supabase.js', './js/art.js', './js/common.js', './js/login.js', './js/app.js', './js/guest.js', './data/curso.json',
   './icons/icon-192.png', './icons/icon-512.png', './data/productos-gatos.json',

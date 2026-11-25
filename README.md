@@ -96,3 +96,7 @@ index.html (acceso)  app.html (aplicación)  sw.js  manifest.json
 css/style.css  js/{config,common,art,login,app}.js  js/vendor/supabase.js (supabase-js 2.45.4, sin CDN)
 supabase/schema.sql  tests/  data/productos-gatos.json  imagenes/  icons/
 ```
+
+
+## Actualización móvil y datos demo
+Consulta `CLIENTE-DEMO.md` y ejecuta `supabase/datos_demo_cliente.sql` después de registrar tu cuenta cliente.
