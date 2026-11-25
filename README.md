@@ -17,7 +17,7 @@ reservas con validación de horarios, historial médico y panel del personal. Fr
 Edita `js/config.js` y pega tus dos valores:
 ```js
 window.PATA_CONFIG = {
-  SUPABASE_URL: "https://xxxxxxxx.supabase.co",
+  SUPABASE_URL: "https://xxxxxxxx.supabase.co",   // SOLO esto: sin /rest/v1/ (con él, el login falla con "invalid request")
   SUPABASE_ANON_KEY: "eyJhbGciOi..."
 };
 ```
@@ -45,6 +45,13 @@ Para generar más códigos (SQL Editor): `insert into staff_activation_codes(cod
 **Cambia el código de ejemplo antes de entregar** (`update staff_activation_codes set code='OTRO' where code='PATA-STAFF-2026';`).
 Los correos y contraseñas de prueba los defines tú al registrarte; el repositorio no incluye contraseñas.
 
+## 2b. Modo invitado (acceso oculto)
+En la pantalla de acceso, toca el **logo 7 veces seguidas** (cada toque a menos de 1,5 s del anterior): aparece una advertencia.
+Un toque más en el logo (antes de 6 s) abre `guest.html`. Sin esa secuencia, `guest.html` redirige al login.
+Muestra los **avances del curso** (`data/curso.json`: semanas 1 a 3, 16 temas), el **catálogo de servicios leído en vivo de la base**
+y una pestaña **Bloqueado** que comprueba contra la BD que citas, mascotas, historial y perfiles no son accesibles sin cuenta.
+El bloqueo real lo hace la base (RLS: `anon` solo puede leer `services_catalog`); la interfaz solo lo refleja.
+
 ## 3. Qué hace cada pantalla
 - **Acceso (única)**: ingresar / crear cuenta / recuperar contraseña / **nueva contraseña** (flujo final del enlace del correo). Mascotas animadas (gato y perro), patitas flotantes, bloqueo tras 5 intentos.
 - **Inicio**: saludo, contadores animados, próxima cita, accesos rápidos y consejos desplegables.
@@ -69,7 +76,8 @@ Sin conexión se muestran los últimos datos guardados y se bloquea escribir. Te
 
 ## 6. Pruebas incluidas
 ```bash
-npm i && npm test        # 44 comprobaciones de interfaz con un Supabase simulado
+npm i && npm test        # comprobaciones de interfaz con un Supabase simulado
+node tests/links.test.js # verifica que no haya enlaces ni recursos rotos
 ```
 `tests/db-test.sql` prueba el esquema en un PostgreSQL real (solapamientos, domingo, almuerzo, escalada de rol, RLS, flujo del personal).
 **Importante:** no pude conectarme a tu proyecto Supabase real; antes de la exposición haz la prueba manual de la sección 7.

@@ -55,7 +55,7 @@
       select() { return api; }, insert(p) { b.op = 'insert'; b.payload = p; return api; }, update(p) { b.op = 'update'; b.payload = p; return api; }, delete() { b.op = 'delete'; return api; },
       eq(c, v) { b.f.push(r => r[c] === v); return api; }, in(c, v) { b.f.push(r => v.includes(r[c])); return api; },
       gte(c, v) { b.f.push(r => r[c] >= v); return api; }, lt(c, v) { b.f.push(r => r[c] < v); return api; },
-      order(c, o) { b.ord = { c, asc: !o || o.ascending !== false }; return api; }, single() { b.single = true; return api; },
+      limit() { return api; }, order(c, o) { b.ord = { c, asc: !o || o.ascending !== false }; return api; }, single() { b.single = true; return api; },
       then(res, rej) { return run().then(res, rej); }
     };
     return api;

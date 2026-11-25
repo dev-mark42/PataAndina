@@ -1,5 +1,6 @@
 /* Ilustraciones SVG animadas (se animan con CSS: cola, orejas, parpadeo, lengua). */
 window.ART = {
+  paw: () => `<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="10.5" rx="2" ry="2.6"/><ellipse cx="10" cy="6" rx="2" ry="2.6"/><ellipse cx="15" cy="6" rx="2" ry="2.6"/><ellipse cx="19" cy="10.5" rx="2" ry="2.6"/><path d="M12.5 11.5c-3.2 0-6.2 3.6-6.2 6.2 0 2 1.6 3.1 3.2 3.1 1.4 0 2-.7 3-.7s1.6.7 3 .7c1.600 0 3.200-1.100 3.200-3.100 0-2.600-3-6.200-6.200-6.200z"/></svg>`,
   cat: (c = '#cf8265') => `<svg class="pet-svg cat" viewBox="0 0 160 170" role="img" aria-label="Gato animado" data-say="¡Miau!">
     <path class="tail" d="M118 150c34 2 44-34 22-52" fill="none" stroke="${c}" stroke-width="13" stroke-linecap="round"/>
     <ellipse cx="80" cy="132" rx="42" ry="34" fill="${c}"/><ellipse cx="80" cy="140" rx="24" ry="22" fill="#f3dccf"/>

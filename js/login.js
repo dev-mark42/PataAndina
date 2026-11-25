@@ -2,12 +2,21 @@
 (function () {
   'use strict';
   const { $, $$, v, sb, toast, errMsg, btnBusy, setField, liveValidate } = Pata;
-  $('#heroCat').innerHTML = ART.cat(); $('#heroDog').innerHTML = ART.dog();
-  $('#walkDog').innerHTML = ART.dog(); $('#walkCat').innerHTML = ART.cat();
-  $('#miniPets').innerHTML = ART.cat() + ART.dog(); $('#ecg').innerHTML = ART.ecg(); Pata.paws($('#paws'));
+  $('#logoMark').innerHTML = ART.paw(); $('#ecg').innerHTML = ART.ecg(); Pata.paws($('#paws'));
   Pata.initTheme($('#themeBtn')); Pata.initPWA($('#installBtn'));
   Pata.onNet = on => { $('#offWarn').hidden = on; }; Pata.initNet(null);
   if (!Pata.configured) $('#cfgWarn').hidden = false;
+
+  /* ---- Acceso oculto: 7 toques al logo -> advertencia -> un toque más -> modo invitado ---- */
+  (function () {
+    let n = 0, last = 0, armedUntil = 0;
+    $('#logo').addEventListener('click', () => {
+      const now = Date.now();
+      if (armedUntil && now < armedUntil) { try { sessionStorage.setItem('pata-guest', '1'); } catch (_) { } return location.assign('./guest.html'); }
+      armedUntil = 0; n = now - last < 1500 ? n + 1 : 1; last = now;
+      if (n === 7) { n = 0; armedUntil = now + 6000; toast('Advertencia: zona reservada. Un toque más en el logo para continuar.', 'err'); }
+    });
+  })();
 
   /* ---- Pestañas ---- */
   function show(name) {
@@ -16,7 +25,7 @@
     $('#authTabs').hidden = name === 'newpass';
   }
   $('#authTabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) show(t.dataset.tab); });
-  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) show(g.dataset.go); const b = e.target.closest('.eye-btn'); if (b) { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? '👁️' : '🙈'; } });
+  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) show(g.dataset.go); const b = e.target.closest('.eye-btn'); if (b) { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? 'Ver' : 'Ocultar'; } });
   const msg = (el, text, kind) => { el.hidden = !text; el.textContent = text || ''; el.className = 'notice' + (kind ? ' ' + kind : ''); };
   const meter = (inp, bar, txt) => inp.addEventListener('input', () => { const s = v.strength(inp.value); bar.style.width = s * 25 + '%'; bar.style.background = ['#b4483a', '#b4483a', '#b7791f', '#2f7d57', '#2f7d57'][s]; if (txt) txt.textContent = ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Excelente'][s]; });
   meter($('#rPass'), $('#meter'), $('#meterTxt')); meter($('#nPass'), $('#nMeter'));

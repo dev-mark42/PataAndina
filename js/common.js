@@ -2,11 +2,16 @@
 (function () {
   'use strict';
   const cfg = window.PATA_CONFIG || {};
-  const configured = /^https:\/\/\S+/.test(cfg.SUPABASE_URL || '') && (cfg.SUPABASE_ANON_KEY || '').length > 40;
+  /* Aunque peguen la URL con /rest/v1/ o con barra final, se usa solo el origen (evita "invalid request"). */
+  const origin = u => { try { const x = new URL(String(u || '').trim()); return x.protocol === 'https:' ? x.origin : ''; } catch (_) { return ''; } };
+  const SB_URL = origin(cfg.SUPABASE_URL), SB_KEY = String(cfg.SUPABASE_ANON_KEY || '').trim();
+  const configured = !!SB_URL && SB_KEY.length > 40;
   const P = window.Pata = { configured, sb: null };
+  /* Las claves nuevas (sb_publishable_...) no son JWT: no deben viajar en Authorization. */
+  const safeFetch = (u, o = {}) => { const h = new Headers(o.headers || {}); if (/^Bearer sb_/.test(h.get('Authorization') || '')) h.delete('Authorization'); return fetch(u, { ...o, headers: h }); };
   if (configured && window.supabase) {
-    P.sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY,
-      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    P.sb = window.supabase.createClient(SB_URL, SB_KEY,
+      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }, global: { fetch: safeFetch } });
   }
 
   /* ---- DOM ---- */
@@ -52,6 +57,7 @@
     const m = (e && (e.message || e.error_description)) || String(e || '');
     const c = e && e.code;
     if (!navigator.onLine || /Failed to fetch|NetworkError|Load failed/i.test(m)) return 'Sin conexión. Revisa tu internet e inténtalo otra vez.';
+    if (/invalid path|requested path is invalid|invalid request|Invalid API key/i.test(m)) return 'La conexión con Supabase está mal configurada: revisa js/config.js (URL sin /rest/v1/ y clave correcta).';
     if (c === '23P01') return 'Ese horario acaba de ser tomado por otra reserva. Elige otro.';
     if (c === '42501' || /row-level security|permission denied/i.test(m)) return 'No tienes permiso para realizar esta acción.';
     if (c === '23505') return 'Ese registro ya existe.';
@@ -68,21 +74,25 @@
   /* ---- Toasts ---- */
   P.toast = (msg, type = 'ok') => {
     let box = document.getElementById('toasts'); if (!box) { box = document.createElement('div'); box.id = 'toasts'; box.setAttribute('aria-live', 'polite'); document.body.appendChild(box); }
-    const t = document.createElement('div'); t.className = 'toast' + (type === 'err' ? ' err' : ''); t.textContent = (type === 'err' ? '⚠️ ' : '✅ ') + msg; box.appendChild(t);
+    const t = document.createElement('div'); t.className = 'toast' + (type === 'err' ? ' err' : ''); t.textContent = msg; box.appendChild(t);
     setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, type === 'err' ? 5200 : 3200);
   };
 
   /* ---- Efectos ---- */
-  P.confetti = (n = 28) => {
-    const em = ['🐾', '🐶', '🐱', '💚', '🦴', '✨'];
-    for (let i = 0; i < n; i++) { const s = document.createElement('span'); s.className = 'fall'; s.textContent = em[i % em.length]; s.style.left = Math.random() * 100 + 'vw'; s.style.fontSize = 16 + Math.random() * 18 + 'px'; s.style.animationDuration = 2.2 + Math.random() * 2 + 's'; s.style.animationDelay = Math.random() * .6 + 's'; document.body.appendChild(s); setTimeout(() => s.remove(), 5200); }
+  P.confetti = (n = 16) => {
+    const paw = ART.paw(); n = Math.min(n, 20);
+    for (let i = 0; i < n; i++) { const s = document.createElement('span'); s.className = 'fall'; s.innerHTML = paw; const z = 14 + Math.random() * 14; s.style.cssText = `left:${Math.random() * 100}vw;width:${z}px;height:${z}px;color:var(${i % 3 ? '--forest' : '--accent'});animation-duration:${2.2 + Math.random() * 2}s;animation-delay:${Math.random() * .6}s`; document.body.appendChild(s); setTimeout(() => s.remove(), 5200); }
   };
   P.countUp = (el, to) => { const t0 = performance.now(); const step = t => { const k = Math.min((t - t0) / 700, 1); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); };
-  P.paws = (box, n = 14) => { for (let i = 0; i < n; i++) { const s = document.createElement('span'); s.textContent = i % 2 ? '🐾' : '🦴'; s.style.left = Math.random() * 100 + '%'; s.style.animationDuration = 9 + Math.random() * 10 + 's'; s.style.animationDelay = -Math.random() * 14 + 's'; box.appendChild(s); } };
+  /* Rastro de huellas que avanza en diagonal: sobrio, sin caricaturas. */
+  P.paws = box => {
+    if (!box) return; box.classList.add('paw-trail'); const paw = ART.paw();
+    [[6, 88, 1], [54, 96, -1]].forEach(([x0, y0, dir], t) => { for (let i = 0; i < 10; i++) { const side = i % 2 ? 1 : -1, e = document.createElement('span'); e.className = 'print'; e.style.left = (x0 + i * 4.6 * dir + side * 1.4) + '%'; e.style.top = (y0 - i * 8.2 + side * 1.2) + '%'; e.style.setProperty('--r', dir * 28 + 'deg'); e.style.animationDelay = (i * .55 + t * 2.4) + 's'; e.innerHTML = paw; box.appendChild(e); } });
+  };
   /* Ripple en botones + mascotas que hablan al tocarlas */
   document.addEventListener('click', e => {
     const b = e.target.closest('.btn'); if (b) { const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height), s = document.createElement('span'); s.className = 'ripple'; s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`; b.appendChild(s); setTimeout(() => s.remove(), 600); }
-    const p = e.target.closest('.pet-svg[data-say]'); if (p) { const w = p.parentElement; w.style.position = 'relative'; const s = document.createElement('span'); s.className = 'bubble'; s.textContent = p.dataset.say + ' 💚'; s.style.left = '30%'; s.style.top = '-6px'; w.appendChild(s); setTimeout(() => s.remove(), 1200); }
+
   });
   P.btnBusy = (b, on) => { b.classList.toggle('loading', on); b.disabled = on; };
 
