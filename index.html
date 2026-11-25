@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#315d4d">
+  <meta name="description" content="Pata Andina Vet: reserva citas, guarda el historial médico de tu mascota y gestiona la clínica.">
+  <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Ingresar · Pata Andina Vet</title>
+  <link rel="manifest" href="./manifest.json"><link rel="icon" type="image/png" href="./icons/icon-192.png"><link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="login">
+  <section class="stage" aria-hidden="false">
+    <div class="paws-bg" id="paws"></div>
+    <div class="brandline" style="position:relative;z-index:2"><span class="mark">🐾</span><span>PATA ANDINA VET</span></div>
+    <h1 style="position:relative;z-index:2">Cuidar también es <em>acompañar.</em></h1>
+    <p style="position:relative;z-index:2">Reserva citas, guarda el historial médico de tus mascotas y recibe el seguimiento de nuestro equipo veterinario.</p>
+    <div class="hero-pets"><div class="pw bob" id="heroCat"></div><div class="pw bob" id="heroDog" style="animation-delay:-1.2s"></div></div>
+    <div class="ecg-box" id="ecg" style="position:relative;z-index:2"></div>
+    <div class="ground"><div class="walker" id="walkDog"></div><div class="walker two" id="walkCat"></div></div>
+  </section>
+
+  <section class="formside">
+    <div class="auth-card card" style="box-shadow:none;border:0;background:transparent;padding:0">
+      <div class="mini-pets" id="miniPets"></div>
+      <div id="cfgWarn" class="notice warn" hidden><b>Falta configurar Supabase.</b> Abre <code>js/config.js</code> y pega tu URL y tu anon key (ver README).</div>
+      <div id="offWarn" class="notice bad" hidden>Sin conexión: necesitas internet para ingresar.</div>
+
+      <!-- Pestañas -->
+      <div class="tabs" role="tablist" id="authTabs">
+        <button class="tab active" role="tab" data-tab="login">Ingresar</button>
+        <button class="tab" role="tab" data-tab="register">Crear cuenta</button>
+        <button class="tab" role="tab" data-tab="recover">Olvidé mi clave</button>
+      </div>
+
+      <!-- Ingresar -->
+      <form id="loginForm" class="pane" data-pane="login" novalidate>
+        <h2>¡Hola de nuevo!</h2><p class="lead">Ingresa para ver las citas y la salud de tus mascotas.</p>
+        <div id="loginMsg" class="notice bad" hidden role="alert"></div>
+        <div class="field"><label for="lEmail">Correo electrónico</label><input id="lEmail" type="email" autocomplete="email" inputmode="email" placeholder="tucorreo@ejemplo.com"></div>
+        <div class="field"><label for="lPass">Contraseña</label><div class="pw-wrap"><input id="lPass" type="password" autocomplete="current-password" placeholder="Tu contraseña"><button type="button" class="eye-btn" aria-label="Mostrar contraseña">👁️</button></div></div>
+        <button class="btn primary block" id="loginBtn" type="submit">Ingresar 🐾</button>
+        <p class="hint" style="text-align:center;margin-top:.8rem">¿Primera vez? <button type="button" class="link" data-go="register">Crea tu cuenta</button></p>
+      </form>
+
+      <!-- Registro -->
+      <form id="regForm" class="pane" data-pane="register" novalidate hidden>
+        <h2>Crea tu cuenta</h2><p class="lead">Es gratis y toma menos de un minuto.</p>
+        <div id="regMsg" class="notice" hidden role="alert"></div>
+        <div class="field"><label for="rName">Nombre completo</label><input id="rName" autocomplete="name" placeholder="Ana Pérez" maxlength="80"></div>
+        <div class="row2">
+          <div class="field"><label for="rPhone">Celular</label><input id="rPhone" inputmode="numeric" maxlength="8" placeholder="71234567" autocomplete="tel-national"></div>
+          <div class="field"><label for="rEmail">Correo</label><input id="rEmail" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com"></div>
+        </div>
+        <div class="field"><label for="rPass">Contraseña</label><div class="pw-wrap"><input id="rPass" type="password" autocomplete="new-password" placeholder="Mínimo 8, con letras y números"><button type="button" class="eye-btn" aria-label="Mostrar contraseña">👁️</button></div><div class="meter" aria-hidden="true"><i id="meter"></i></div><span class="hint" id="meterTxt">Usa 8+ caracteres con letras y números.</span></div>
+        <div class="field"><label for="rPass2">Repite la contraseña</label><input id="rPass2" type="password" autocomplete="new-password"></div>
+        <label class="check"><input type="checkbox" id="rTerms"><span>Acepto que mis datos y los de mi mascota se usen para gestionar mis citas y su historial.</span></label>
+        <div class="err" id="termsErr" style="max-height:none"></div>
+        <button class="btn primary block" id="regBtn" type="submit">Crear cuenta</button>
+      </form>
+
+      <!-- Recuperar -->
+      <form id="recForm" class="pane" data-pane="recover" novalidate hidden>
+        <h2>Recupera tu acceso</h2><p class="lead">Te enviaremos un enlace para crear una contraseña nueva.</p>
+        <div id="recMsg" class="notice" hidden role="alert"></div>
+        <div class="field"><label for="cEmail">Correo electrónico</label><input id="cEmail" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com"></div>
+        <button class="btn primary block" id="recBtn" type="submit">Enviar enlace</button>
+        <p class="hint" style="text-align:center;margin-top:.8rem"><button type="button" class="link" data-go="login">Volver a ingresar</button></p>
+      </form>
+
+      <!-- Nueva contraseña (llegas desde el enlace del correo) -->
+      <form id="newPassForm" class="pane" data-pane="newpass" novalidate hidden>
+        <h2>Nueva contraseña</h2><p class="lead">Elige una contraseña segura para tu cuenta.</p>
+        <div id="newMsg" class="notice" hidden role="alert"></div>
+        <div class="field"><label for="nPass">Nueva contraseña</label><div class="pw-wrap"><input id="nPass" type="password" autocomplete="new-password"><button type="button" class="eye-btn" aria-label="Mostrar contraseña">👁️</button></div><div class="meter" aria-hidden="true"><i id="nMeter"></i></div></div>
+        <div class="field"><label for="nPass2">Repítela</label><input id="nPass2" type="password" autocomplete="new-password"></div>
+        <button class="btn primary block" id="newBtn" type="submit">Guardar contraseña</button>
+      </form>
+
+      <p class="hint" style="text-align:center;margin-top:1.2rem"><button class="link" id="themeBtn" type="button">🌙</button> · <button class="link" id="installBtn" type="button" hidden>📲 Instalar app</button> Proyecto académico · PWA</p>
+    </div>
+  </section>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/vendor/supabase.js"></script>
+  <script src="./js/art.js"></script>
+  <script src="./js/common.js"></script>
+  <script src="./js/login.js"></script>
+</body>
+</html>
