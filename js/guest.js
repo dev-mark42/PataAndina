@@ -1,12 +1,9 @@
-/* Modo invitado (acceso oculto): avances del curso, catálogo en vivo y accesos bloqueados.
-   Sin sesión: la base de datos solo deja leer services_catalog (RLS); todo lo demás está bloqueado. */
+/* Modo invitado público: avances y catálogo en solo lectura, sin autenticación. */
 (function () {
   'use strict';
   const P = Pata, { $, $$, esc, toast, errMsg } = P;
-  let allowed = false; try { allowed = sessionStorage.getItem('pata-guest') === '1'; } catch (_) { }
-  if (!allowed) return location.replace('./index.html');
   P.initTheme($('#themeBtn')); P.initPWA(null); P.initNet($('#net'));
-  $('#exitBtn').onclick = () => { try { sessionStorage.removeItem('pata-guest'); } catch (_) { } location.replace('./index.html'); };
+  $('#exitBtn').onclick = () => location.replace('./index.html');
 
   const CATS = { consulta: 'Consultas', prevencion: 'Prevención', procedimientos: 'Procedimientos', diagnostico: 'Diagnóstico', bienestar: 'Bienestar' };
   const LOCKED = [

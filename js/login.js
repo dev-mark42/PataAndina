@@ -7,16 +7,8 @@
   Pata.onNet = on => { $('#offWarn').hidden = on; }; Pata.initNet(null);
   if (!Pata.configured) $('#cfgWarn').hidden = false;
 
-  /* ---- Acceso oculto: 7 toques al logo -> advertencia -> un toque más -> modo invitado ---- */
-  (function () {
-    let n = 0, last = 0, armedUntil = 0;
-    $('#logo').addEventListener('click', () => {
-      const now = Date.now();
-      if (armedUntil && now < armedUntil) { try { sessionStorage.setItem('pata-guest', '1'); } catch (_) { } return location.assign('./guest.html'); }
-      armedUntil = 0; n = now - last < 1500 ? n + 1 : 1; last = now;
-      if (n === 7) { n = 0; armedUntil = now + 6000; toast('Advertencia: zona reservada. Un toque más en el logo para continuar.', 'err'); }
-    });
-  })();
+  /* El modo invitado ahora es público y visible desde el login. No requiere sesión. */
+
 
   /* ---- Pestañas ---- */
   function show(name) {

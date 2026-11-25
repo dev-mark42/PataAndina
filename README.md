@@ -103,3 +103,7 @@ Consulta `CLIENTE-DEMO.md` y ejecuta `supabase/datos_demo_cliente.sql` después 
 
 ## Última actualización: autenticación, catálogo y bitácora
 Ver `ACCESO-Y-CARGA-DEMO.md`. SQL adicional: `supabase/seed_completo_y_bitacora.sql` (50 servicios y 200 eventos demo) y `supabase/crear_usuarios_demo.sql` (mascotas y fichas de prueba para el usuario Auth creado en Supabase).
+
+
+## Acceso como invitado (sin cuenta)
+En `index.html` existe el botón visible **Entrar como invitado**. Abre `guest.html` sin Supabase Auth y permite consultar avances, galería y catálogo. Es deliberadamente de solo lectura: no crea reservas, pedidos, mascotas ni historial. Para funciones personales se requiere una cuenta real.
