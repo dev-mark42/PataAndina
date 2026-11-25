@@ -1,31 +1,11 @@
 <!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#315d4d">
-  <meta name="robots" content="noindex">
-  <title>Servicios públicos · Pata Andina Vet</title>
-  <link rel="manifest" href="./manifest.json"><link rel="icon" type="image/png" href="./icons/icon-192.png"><link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./css/style.css">
-</head>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#315d4d"><meta name="description" content="Explora los servicios de Pata Andina Vet"><link rel="manifest" href="./manifest.json"><link rel="stylesheet" href="./css/style.css"><title>Catálogo · Pata Andina Vet</title></head>
 <body class="guest">
-  <header class="top">
-    <div class="brand"><b>✚</b><span>PATA ANDINA</span></div>
-    <span class="badge b-pendiente">Catálogo público · solo lectura</span>
-    <span class="net" id="net" data-s="on"><i></i><b>En línea</b></span>
-    <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema">🌙</button>
-    <a class="btn sm" id="exitBtn" href="./index.html">Ir al login</a>
-  </header>
-  <main class="gmain" id="main">
-    <h2>Catálogo de servicios</h2>
-    <p class="lead">Consulta los servicios sin registrarte. Para solicitar una cita debes iniciar sesión.</p>
-    <div id="gPane"></div>
-  </main>
-  <script src="./js/config.js"></script>
-  <script src="./js/vendor/supabase.js"></script>
-  <script src="./js/art.js"></script>
-  <script src="./js/common.js"></script>
-  <script src="./js/guest.js"></script>
-</body>
-</html>
+<header class="top"><a class="brand" href="./index.html"><b>✚</b><span>PATA ANDINA</span></a><span class="net" id="net"><i></i><b>Catálogo público</b></span><a class="btn primary sm" href="./index.html">Ingresar</a></header>
+<main class="gmain"><section class="guest-hero"><div><span class="eyebrow">CUIDADO VETERINARIO CON CARIÑO</span><h1>Todo para una vida<br><em>más saludable.</em></h1><p>Explora nuestros servicios, especialidades y recomendaciones. Este modo es de solo lectura.</p><a class="btn primary" href="./index.html">Iniciar sesión para reservar</a></div><div class="guest-hero-art" aria-hidden="true"><img src="./imagenes/vet-portada.webp" alt=""></div></section>
+<section class="gallery-intro"><span class="eyebrow">CATÁLOGO</span><h2>Encuentra el cuidado ideal</h2><p>Filtra por especialidad o busca directamente el servicio que necesitas.</p></section>
+<div class="guest-tools"><label class="field"><span>Buscar servicios</span><input id="gSearch" type="search" placeholder="Ej. vacuna, consulta, baño…"></label><div class="chips" id="gCats"><button class="chip active" data-cat="todas">Todos</button><button class="chip" data-cat="consulta">Consultas</button><button class="chip" data-cat="prevencion">Prevención</button><button class="chip" data-cat="procedimientos">Procedimientos</button><button class="chip" data-cat="diagnostico">Diagnóstico</button><button class="chip" data-cat="bienestar">Bienestar</button></div></div>
+<section><div class="lockrow"><h2>Servicios disponibles</h2><span class="badge b-confirmada" id="gCount">Cargando…</span></div><div id="gServices" class="grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></section>
+<section class="guest-callout"><div><span class="eyebrow">¿LISTO PARA CUIDARLO?</span><h2>Tu mascota merece atención a tiempo.</h2><p>Inicia sesión o crea una cuenta para registrar mascotas y solicitar una cita.</p></div><a class="btn primary" href="./index.html">Ingresar / Crear cuenta</a></section>
+<p class="hint" style="text-align:center;margin:1.5rem 0">Modo invitado · Solo lectura · Pata Andina Vet</p></main>
+<script src="./js/config.js"></script><script src="./js/vendor/supabase.js"></script><script src="./js/common.js"></script><script src="./js/guest.js"></script></body></html>

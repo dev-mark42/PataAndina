@@ -24,7 +24,7 @@ const submit = (w, sel) => w.document.querySelector(sel).dispatchEvent(new w.Eve
   console.log('Servicios en schema.sql:', services.length); ok(services.length === 16, '16 servicios en el catálogo');
 
   console.log('\n[LOGIN]'); let d = await open('index.html'); let w = d.window;
-  await wait(() => w.document.querySelector('.print')); ok(true, 'login carga con rastro de huellas animado');
+  await wait(() => w.document.querySelector('#heroDog svg')); ok(true, 'login carga con mascotas animadas');
   ok(w.document.querySelector('#cfgWarn').hidden, 'sin aviso de configuración (config válida)');
   submit(w, '#loginForm'); ok(w.document.querySelectorAll('#loginForm .field.invalid').length === 2, 'login vacío muestra 2 errores');
   fill(w, '#lEmail', 'mal'); fill(w, '#lPass', 'x'); submit(w, '#loginForm'); ok(w.document.querySelector('#lEmail').closest('.field').classList.contains('invalid'), 'correo inválido rechazado');
@@ -34,8 +34,8 @@ const submit = (w, sel) => w.document.querySelector(sel).dispatchEvent(new w.Eve
   ok(w.document.querySelector('#rPhone').closest('.field').classList.contains('invalid'), 'celular que no empieza con 6/7 rechazado');
   ok(w.document.querySelector('#rPass').closest('.field').classList.contains('invalid'), 'contraseña débil rechazada');
   fill(w, '#rPhone', '71234567'); fill(w, '#rPass', 'Clave1234'); fill(w, '#rPass2', 'Clave1234'); w.document.querySelector('#rTerms').checked = true;
-  submit(w, '#regForm'); await wait(() => !w.document.querySelector('#loginMsg').hidden);
-  ok(/confirmar/.test(w.document.querySelector('#loginMsg').textContent) && !w.document.querySelector('#loginForm').hidden, 'registro OK vuelve al login y pide confirmar correo');
+  submit(w, '#regForm'); await wait(() => !w.document.querySelector('#regMsg').hidden);
+  ok(/confirmar/.test(w.document.querySelector('#regMsg').textContent), 'registro OK pide confirmar correo');
   ok(w.__lastSignUp.data.full_name === 'Ana Pérez' && w.__lastSignUp.data.phone === '71234567', 'metadatos enviados a signUp');
   click(w, '[data-tab=recover]'); fill(w, '#cEmail', 'ana@test.com'); submit(w, '#recForm'); await wait(() => !w.document.querySelector('#recMsg').hidden);
   ok(w.__reset.email === 'ana@test.com' && /index\.html/.test(w.__reset.o.redirectTo), 'recuperación envía correo con redirectTo a index.html');
@@ -43,9 +43,6 @@ const submit = (w, sel) => w.document.querySelector(sel).dispatchEvent(new w.Eve
   ok(/incorrectos/.test(w.document.querySelector('#loginMsg').textContent), 'credenciales malas: mensaje claro');
   ok(d.errs.filter(e => !/navigation/i.test(e)).length === 0, 'sin errores JS en login: ' + d.errs.join('|')); w.close();
 
-  { const logo = w.document.querySelector('#logo'); for (let i = 0; i < 7; i++) click(w, logo);
-    ok(/Advertencia/.test(w.document.querySelector('.toast')?.textContent || ''), '7 toques al logo: advertencia del modo invitado');
-    ok(!w.sessionStorage.getItem('pata-guest'), 'todavía no entra'); click(w, logo); ok(w.sessionStorage.getItem('pata-guest') === '1', 'un toque más habilita el modo invitado'); }
   console.log('\n[CAMBIO DE CONTRASEÑA FINAL]'); d = await open('index.html#access_token=x&type=recovery'); w = d.window;
   await wait(() => !w.document.querySelector('#newPassForm').hidden); ok(true, 'enlace de recuperación abre el formulario de nueva contraseña');
   fill(w, '#nPass', 'corta'); fill(w, '#nPass2', 'otra'); submit(w, '#newPassForm'); ok(w.document.querySelectorAll('#newPassForm .field.invalid').length === 2, 'valida contraseña nueva');

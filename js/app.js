@@ -9,11 +9,12 @@
   const uid = session.user.id;
   sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') location.replace('./index.html'); });
   P.initTheme($('#themeBtn')); P.initPWA($('#installBtn')); P.initNet($('#net'));
+  let logoTaps=0, logoReset=null; const logo=$('#brandLogo'); if(logo){logo.addEventListener('click',()=>{logoTaps++; clearTimeout(logoReset); logoReset=setTimeout(()=>logoTaps=0,2200); if(logoTaps===7) P.toast('Un toque más para ver los avances…'); if(logoTaps>=8){logoTaps=0; P.modal('<h2>🐾 Avances de Pata Andina</h2><p>Panel de presentación del sistema.</p><div class="progress-list"><p>✓ Acceso, registro y recuperación de contraseña</p><p>✓ Perfiles y gestión de mascotas</p><p>✓ Catálogo y especialidades</p><p>✓ Reserva de citas con validación de horarios</p><p>✓ Historial médico y atención del personal</p><p>✓ PWA adaptable a móvil y escritorio</p><p>✓ Seguridad por roles y políticas RLS</p></div><div class="actions"><button class="btn primary" data-close>Continuar</button></div>');}}); }
   P.onNet = on => { let b = $('#offBar'); if (!on && !b) { b = document.createElement('div'); b.id = 'offBar'; b.className = 'offline-bar'; b.textContent = 'Sin conexión: puedes ver datos guardados, pero no reservar ni editar.'; $('#main').prepend(b); } if (on && b) b.remove(); };
 
   const CATS = { consulta: 'Consultas', prevencion: 'Prevención', procedimientos: 'Procedimientos', diagnostico: 'Diagnóstico', bienestar: 'Bienestar' };
   const ST = { pendiente: 'Pendiente', confirmada: 'Confirmada', completada: 'Completada', cancelada: 'Cancelada', rechazada: 'Rechazada' };
-  const SPECIES = { perro: 'Perro', gato: 'Gato', otro: 'Otro' };
+  const SPECIES = { perro: '🐶 Perro', gato: '🐱 Gato', otro: '🐾 Otro' };
   const S = { profile: null, pets: [], appts: [], services: [], staff: false };
   const badge = s => `<span class="badge b-${s}">${ST[s]}</span>`;
   const icoImg = s => `<img src="./imagenes/${esc(s.icon || 'consulta')}.svg" alt="" loading="lazy">`;
@@ -33,74 +34,30 @@
   const active = a => ['pendiente', 'confirmada'].includes(a.status) && new Date(a.ends_at) > new Date();
 
   /* ---------- Navegación ---------- */
-  const IC = {
-    inicio: '<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
-    reservar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18M12 13v5M9.5 15.5h5"/>',
-    turnos: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
-    mascotas: '<circle cx="6" cy="10.5" r="1.8"/><circle cx="10" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="19" cy="10.5" r="1.8"/><path d="M12.5 11.5c-3.200 0-6.200 3.600-6.200 6.200 0 2 1.600 3.100 3.200 3.100 1.400 0 2-.7 3-.7s1.600.7 3 .7c1.600 0 3.200-1.100 3.200-3.100 0-2.600-3-6.200-6.200-6.200z"/>',
-    historial: '<path d="M3 12a9 9 0 1 0 3-6.700L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
-    servicios: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
-    personal: '<path d="M12 3l8 3v6c0 5-3.500 8-8 9-4.500-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
-    perfil: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
-    mas: '<path d="M4 6h16M4 12h16M4 18h16"/>'
-  };
-  const ico = id => `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[id]}</svg>`;
-  /* Menú subdividido por secciones (g): laptop = grupos plegables; celular = hoja con secciones */
-  let advancesUnlocked = false;
-  let logoTapCount = 0, logoTapTimer = null;
   const NAV = [
-    { id: 'inicio', t: 'Inicio', g: 'Principal' }, { id: 'reservar', t: 'Reservar', g: 'Principal' }, { id: 'turnos', t: 'Mis citas', g: 'Principal' },
-    { id: 'mascotas', t: 'Mascotas', g: 'Mis mascotas' }, { id: 'historial', t: 'Historial', g: 'Mis mascotas' },
-    { id: 'servicios', t: 'Servicios', g: 'Clínica' }, { id: 'personal', t: 'Personal', g: 'Clínica', staff: true }, { id: 'bitacora', t: 'Bitácora', g: 'Administración', staff: true },
-    { id: 'perfil', t: 'Perfil', g: 'Cuenta' },
-    { id: 'avances', t: 'Avances', g: 'Administración', secret: true }
+    { id: 'inicio', t: 'Inicio', e: '🏠' }, { id: 'reservar', t: 'Reservar', e: '📅' }, { id: 'turnos', t: 'Mis citas', e: '🗓️' },
+    { id: 'mascotas', t: 'Mascotas', e: '🐶' }, { id: 'historial', t: 'Historial', e: '📋' }, { id: 'servicios', t: 'Servicios', e: '💉' },
+    { id: 'personal', t: 'Personal', e: '🩺', staff: true }, { id: 'perfil', t: 'Perfil', e: '👤' }
   ];
   const DOCK = ['inicio', 'reservar', 'turnos', 'mascotas'];
   let current = '', arg = null;
-  const visibleNav = () => NAV.filter(n => (!n.staff || S.staff) && (!n.secret || advancesUnlocked));
-  const navBtn = n => `<button class="nav-btn" data-nav="${n.id}"><span class="e">${ico(n.id)}</span><span>${n.t}</span></button>`;
   function buildNav() {
-    const items = visibleNav(), groups = [...new Set(items.map(n => n.g))];
-    $('#side').innerHTML = `<div class="side-head"><div><b>🐾 PATA ANDINA</b><small>Panel de ${S.staff ? 'personal' : 'cliente'}</small></div><button class="side-close" type="button" data-close-menu aria-label="Cerrar menú">×</button></div>` +
-      groups.map(g => `<details class="navgrp" open><summary>${g}</summary>${items.filter(n => n.g === g).map(navBtn).join('')}</details>`).join('') +
-      `<div class="who"><span class="who-avatar">${esc((S.profile.full_name || 'C').trim().charAt(0).toUpperCase())}</span><span><b>${esc(S.profile.full_name)}</b><small>${S.staff ? 'Personal' : 'Cuenta de cliente'}</small></span></div>`;
-    $('#dock').innerHTML = '';
+    const items = NAV.filter(n => !n.staff || S.staff);
+    const btn = n => `<button class="nav-btn" data-nav="${n.id}"><span class="e">${n.e}</span><span>${n.t}</span></button>`;
+    $('#side').innerHTML = items.map(btn).join('') + `<div class="who">${esc(S.profile.full_name)}${S.staff ? ' · 🩺 Personal' : ''}</div>`;
+    $('#dock').innerHTML = items.filter(n => DOCK.includes(n.id)).map(btn).join('') + `<button class="nav-btn" data-nav="__more"><span class="e">⋯</span><span>Más</span></button>`;
   }
   document.addEventListener('click', e => {
     const n = e.target.closest('[data-nav]'); if (!n) return; const id = n.dataset.nav;
     $('.sheet') && $('.sheet').remove();
-    if (id === '__more') { toggleSide(true); return; }
-    toggleSide(false);
+    if (id === '__more') return moreSheet();
     go(id);
   });
-  function toggleSide(open) {
-    const side = $('#side'); if (!side) return;
-    const show = typeof open === 'boolean' ? open : !side.classList.contains('is-open');
-    side.classList.toggle('is-open', show); document.body.classList.toggle('menu-open', show);
-    const trigger = $('.menu-btn'); if (trigger) trigger.setAttribute('aria-expanded', String(show));
-  }
-  $('.menu-btn')?.addEventListener('click', () => toggleSide());
-  // Acceso oculto a Avances: 7 toques advierten, el octavo habilita la sección.
-  $('.brand')?.addEventListener('click', () => {
-    logoTapCount++; clearTimeout(logoTapTimer);
-    if (logoTapCount === 7) P.toast('Un toque más para abrir Avances.', 'ok');
-    if (logoTapCount >= 8) {
-      logoTapCount = 0; advancesUnlocked = true; buildNav();
-      P.toast('Avances desbloqueados. Desplázate dentro de la sección.', 'ok');
-      go('avances'); P.confetti(12); return;
-    }
-    logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 2200);
-  });
-  document.addEventListener('click', e => {
-    if (e.target.closest('[data-close-menu]')) toggleSide(false);
-    if (e.target.classList.contains('side-backdrop')) toggleSide(false);
-  });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleSide(false); });
   function moreSheet() {
-    const items = visibleNav(), groups = [...new Set(items.map(n => n.g))];
-    const sh = document.createElement('div'); sh.className = 'sheet'; sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-label', 'Menú');
-    sh.innerHTML = groups.map(g => `<p class="sheet__t">${g}</p><div class="sheet__g">${items.filter(n => n.g === g).map(n => `<button class="btn block${n.id === current ? ' primary' : ''}" data-nav="${n.id}"><span class="e">${ico(n.id)}</span>${n.t}</button>`).join('')}</div>`).join('') + `<button class="btn ghost block" data-logout>Cerrar sesión</button>`;
-    document.body.appendChild(sh); setTimeout(() => document.addEventListener('click', function f(ev) { if (!sh.contains(ev.target)) { sh.remove(); document.removeEventListener('click', f); } }), 0);
+    const items = NAV.filter(n => (!n.staff || S.staff) && !DOCK.includes(n.id));
+    const s = document.createElement('div'); s.className = 'sheet';
+    s.innerHTML = items.map(n => `<button class="btn block" data-nav="${n.id}">${n.e} ${n.t}</button>`).join('') + `<button class="btn ghost block" data-logout>⎋ Salir</button>`;
+    document.body.appendChild(s); setTimeout(() => document.addEventListener('click', function f(ev) { if (!s.contains(ev.target)) { s.remove(); document.removeEventListener('click', f); } }), 0);
   }
   document.addEventListener('click', e => { if (e.target.closest('[data-logout]') || e.target.closest('#logoutTop')) logout(); });
   async function logout() { if (!await P.confirm('¿Cerrar sesión?', 'Tendrás que ingresar otra vez para ver tus mascotas.', 'Cerrar sesión')) return; P.cache.clear(); await sb.auth.signOut(); location.replace('./index.html'); }
@@ -124,24 +81,28 @@
   ];
   const hourLP = () => +new Intl.DateTimeFormat('es-BO', { timeZone: 'America/La_Paz', hour: '2-digit', hour12: false }).format(new Date());
   async function vInicio(m) {
-    await Promise.all([loadPets(), loadAppts()]);
+    await Promise.all([loadPets(), loadAppts(), loadServices()]);
     const h = hourLP(), hi = h < 12 ? '¡Buenos días' : h < 19 ? '¡Buenas tardes' : '¡Buenas noches';
     const upcoming = S.appts.filter(active).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
     const nxt = upcoming[0], done = S.appts.filter(a => a.status === 'completada').length;
-    const art = S.pets[0] ? ART.forSpecies(S.pets[0].species) : ART.cat() ;
-    m.innerHTML = `<div class="view">
-      <div class="greeting"><div><h2>${hi}, ${esc(S.profile.full_name.split(' ')[0])}!</h2><p>${S.pets.length ? 'Cuidamos a ' + S.pets.map(p => esc(p.name)).join(', ') + ' con cariño.' : 'Registra a tu primera mascota para empezar.'}</p></div><div class="pw bob">${art}</div></div>
-      <div class="cols3" style="margin-bottom:1rem">
-        <div class="card stat lift"><b class="count" data-to="${S.pets.length}">0</b><span>Mascotas</span></div>
-        <div class="card stat lift"><b class="count" data-to="${upcoming.length}">0</b><span>Citas activas</span></div>
-        <div class="card stat lift"><b class="count" data-to="${done}">0</b><span>Atenciones</span></div></div>
-      <div class="cols">
-        <div class="card"><h3>Próxima cita</h3><br>${nxt ? `<dl class="kv"><dt>Servicio</dt><dd>${esc(nxt.service.name)}</dd><dt>Mascota</dt><dd>${esc(nxt.pet.name)}</dd><dt>Cuándo</dt><dd>${fmtDate(nxt.starts_at)} · ${fmtTime(nxt.starts_at)}</dd><dt>Estado</dt><dd>${badge(nxt.status)}</dd></dl><div class="actions"><button class="btn sm" data-nav="turnos">Ver mis citas</button></div>` : empty('No tienes citas próximas.', '<button class="btn accent" data-nav="reservar">Reservar ahora</button>')}</div>
-        <div class="card"><h3>Accesos rápidos</h3><br><div class="actions" style="margin:0">
-          <button class="btn primary" data-nav="reservar">Reservar cita</button><button class="btn" data-nav="mascotas">Mis mascotas</button><button class="btn" data-nav="historial">Historial</button><button class="btn" data-nav="servicios">Servicios</button></div></div></div>
-      <h3 style="margin:1.2rem 0 .6rem">Consejos de cuidado</h3>
-      <div data-group="1">${TIPS.map(t => `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">${t[0]}</span><span class="grow"><b>${t[1]}</b></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad">${t[2]}</div></div></div></div>`).join('')}</div></div>`;
+    const art = S.pets[0] ? ART.forSpecies(S.pets[0].species) : ART.cat();
+    const top = S.services.filter(x=>x.active!==false).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).slice(0,10);
+    const cats = [['todas','Todo'],...Object.entries(CATS)];
+    m.innerHTML = `<div class="view client-home">
+      <div class="greeting"><div><span class="eyebrow">PATA ANDINA VET</span><h2>${hi}, ${esc(S.profile.full_name.split(' ')[0])}!</h2><p>${S.pets.length ? 'Un cuidado especial para ' + S.pets.map(p => esc(p.name)).join(', ') + '.' : 'Registra a tu primera mascota y empieza su cuidado.'}</p><div class="actions"><button class="btn accent" data-nav="reservar">＋ Reservar cita</button><button class="btn ghost hero-ghost" data-nav="mascotas">Mis mascotas</button></div></div><div class="pw bob">${art}</div></div>
+      <div class="cols3 home-stats"><div class="card stat lift"><b class="count" data-to="${S.pets.length}">0</b><span>Mascotas</span></div><div class="card stat lift"><b class="count" data-to="${upcoming.length}">0</b><span>Citas activas</span></div><div class="card stat lift"><b class="count" data-to="${done}">0</b><span>Atenciones</span></div></div>
+      <section class="home-section"><div class="section-head compact"><div><span class="eyebrow">RECOMENDADOS</span><h2>Top 10 para cuidar mejor</h2><p>Servicios destacados para el bienestar de tu mascota.</p></div><button class="btn ghost sm" data-nav="servicios">Ver catálogo completo →</button></div>
+      <div class="chips home-cats" id="homeCats">${cats.map(([k,l],i)=>`<button class="chip ${i===0?'active':''}" data-home-cat="${k}">${l}</button>`).join('')}</div>
+      <div class="home-service-grid" id="homeTop">${top.map(s=>`<article class="home-service"><span class="home-service-ico"><img src="./imagenes/${esc(s.icon||'consulta')}.svg" alt="" loading="lazy"></span><div class="home-service-copy"><span class="tag">${esc(CATS[s.category]||s.category)}</span><b>${esc(s.name)}</b><small>${esc(s.price_label)} · ${s.duration_min} min</small></div><button class="icon-btn home-book" data-home-book="${esc(s.id)}" aria-label="Reservar ${esc(s.name)}">＋</button></article>`).join('')}</div>
+      </section>
+      <div class="cols home-lower"><div class="card home-next"><span class="eyebrow">AGENDA</span><h3>📅 Próxima cita</h3>${nxt ? `<dl class="kv"><dt>Servicio</dt><dd>${esc(nxt.service.name)}</dd><dt>Mascota</dt><dd>${esc(nxt.pet.name)}</dd><dt>Cuándo</dt><dd>${fmtDate(nxt.starts_at)} · ${fmtTime(nxt.starts_at)}</dd><dt>Estado</dt><dd>${badge(nxt.status)}</dd></dl><div class="actions"><button class="btn sm" data-nav="turnos">Ver mis citas</button></div>` : `<p class="hint">Todavía no tienes citas próximas.</p><button class="btn sm accent" data-nav="reservar">Elegir horario</button>`}</div>
+      <div class="card"><span class="eyebrow">ACCESO RÁPIDO</span><h3>Tu espacio</h3><div class="quick-links"><button class="quick-link" data-nav="mascotas"><span>🐾</span><b>Mascotas</b><small>Perfiles y datos</small></button><button class="quick-link" data-nav="historial"><span>🩺</span><b>Historial</b><small>Controles médicos</small></button><button class="quick-link" data-nav="turnos"><span>🗓️</span><b>Mis citas</b><small>Seguimiento</small></button></div></div></div>
+      <section class="home-section tips-section"><div class="section-head compact"><div><span class="eyebrow">CONSEJOS VETERINARIOS</span><h2>Pequeños cuidados, grandes cambios</h2></div></div><div class="tip-row">${TIPS.slice(0,3).map(t=>`<div class="tip-card"><span>${t[0]}</span><b>${t[1]}</b><small>${t[2]}</small></div>`).join('')}</div></section>
+    </div>`;
     $$('.count', m).forEach(c => P.countUp(c, +c.dataset.to));
+    const homeList=(cat)=>{const l=cat==='todas'?top:top.filter(x=>x.category===cat);$('#homeTop',m).innerHTML=l.map(s=>`<article class="home-service"><span class="home-service-ico"><img src="./imagenes/${esc(s.icon||'consulta')}.svg" alt="" loading="lazy"></span><div class="home-service-copy"><span class="tag">${esc(CATS[s.category]||s.category)}</span><b>${esc(s.name)}</b><small>${esc(s.price_label)} · ${s.duration_min} min</small></div><button class="icon-btn home-book" data-home-book="${esc(s.id)}" aria-label="Reservar ${esc(s.name)}">＋</button></article>`).join('')||'<p class="hint">No hay recomendaciones en esta categoría.</p>';};
+    $('#homeCats',m).onclick=e=>{const b=e.target.closest('[data-home-cat]');if(!b)return;$$('[data-home-cat]',m).forEach(x=>x.classList.toggle('active',x===b));homeList(b.dataset.homeCat);};
+    $('#homeTop',m).onclick=e=>{const b=e.target.closest('[data-home-book]');if(b)go('reservar',{service:b.dataset.homeBook});};
   }
 
   /* ======================= MASCOTAS ======================= */
@@ -151,7 +112,7 @@
       <button class="btn primary" id="addPet" style="margin-bottom:1rem">＋ Agregar mascota</button>
       <div data-group="1">${S.pets.map(p => `<div class="acc" data-pet="${p.id}"><button class="acc-head" aria-expanded="false">${petIco(p)}<span class="grow"><b>${esc(p.name)}</b><span class="sub">${esc(SPECIES[p.species])}${p.breed ? ' · ' + esc(p.breed) : ''}${p.birth_date ? ' · ' + P.age(p.birth_date) : ''}</span></span></button>
         <div class="acc-body"><div class="acc-in"><div class="acc-pad"><dl class="kv"><dt>Sexo</dt><dd>${esc(p.sex || '—')}</dd><dt>Nacimiento</dt><dd>${p.birth_date ? fmtDay(p.birth_date) : '—'}</dd><dt>Peso</dt><dd>${p.weight_kg ? p.weight_kg + ' kg' : '—'}</dd><dt>Notas</dt><dd>${esc(p.notes || '—')}</dd></dl>
-        <div class="actions"><button class="btn sm primary" data-book="${p.id}">Reservar</button><button class="btn sm" data-hist="${p.id}">Historial</button><button class="btn sm" data-edit="${p.id}">Editar</button><button class="btn sm danger" data-del="${p.id}">Eliminar</button></div></div></div></div></div>`).join('')}</div>
+        <div class="actions"><button class="btn sm primary" data-book="${p.id}">📅 Reservar</button><button class="btn sm" data-hist="${p.id}">📋 Historial</button><button class="btn sm" data-edit="${p.id}">✏️ Editar</button><button class="btn sm danger" data-del="${p.id}">🗑️ Eliminar</button></div></div></div></div></div>`).join('')}</div>
       ${S.pets.length ? '' : empty('Aún no registraste mascotas.')}</div>`;
     $('#addPet').onclick = () => petForm();
     m.onclick = async e => {
@@ -230,7 +191,7 @@
     return `<div class="card"><dl class="kv"><dt>Mascota</dt><dd>${esc(p.name)}</dd><dt>Servicio</dt><dd>${esc(s.name)}</dd><dt>Fecha</dt><dd>${fmtDate(at)}</dd><dt>Hora</dt><dd>${fmtTime(at)} (${s.duration_min} min)</dd><dt>Precio</dt><dd>${esc(s.price_label)}</dd></dl></div><br>
       <div class="field"><label for="wNote">Comentarios para el veterinario (opcional)</label><textarea id="wNote" rows="2" maxlength="300">${esc(W.note)}</textarea></div>
       <label class="check"><input type="checkbox" id="wOk"><span>Entiendo que la cita queda <b>pendiente</b> hasta que la clínica la confirme.</span></label>
-      <div class="wiz-nav"><button class="btn ghost" data-back>← Atrás</button><button class="btn accent" id="wGo">Solicitar cita</button></div>`;
+      <div class="wiz-nav"><button class="btn ghost" data-back>← Atrás</button><button class="btn accent" id="wGo">Solicitar cita 🐾</button></div>`;
   }
   const nav = ok => `<div class="wiz-nav">${W.step > 1 ? '<button class="btn ghost" data-back>← Atrás</button>' : '<span></span>'}<button class="btn primary" data-next ${ok ? '' : 'disabled'}>Siguiente →</button></div>`;
 
@@ -242,7 +203,7 @@
     const day = W.date; let busy;
     try { const r = await sb.rpc('get_busy_slots', { p_day: day }); if (r.error) throw r.error; busy = r.data || []; } catch (e) { box.innerHTML = `<div class="notice bad">${esc(errMsg(e))}</div>`; return; }
     if (day !== W.date) return;
-    const blocks = [['09:00', '13:00', 'Mañana'], ['14:00', '18:00', 'Tarde']], tm = t => +t.slice(0, 2) * 60 + +t.slice(3);
+    const blocks = [['09:00', '13:00', '☀️ Mañana'], ['14:00', '18:00', '🌤️ Tarde']], tm = t => +t.slice(0, 2) * 60 + +t.slice(3);
     box.innerHTML = blocks.map(([a, b, label]) => {
       let out = ''; for (let mm = tm(a); mm + svc.duration_min <= tm(b); mm += 30) {
         const hh = String(Math.floor(mm / 60)).padStart(2, '0') + ':' + String(mm % 60).padStart(2, '0'), s = Date.parse(toISO(day, hh)), e = s + svc.duration_min * 60000;
@@ -314,19 +275,10 @@
     let pid = (arg && arg.pet) || S.pets[0].id;
     async function draw() {
       m.innerHTML = `<div class="view"><h2>Historial médico</h2><div class="chips">${S.pets.map(p => `<button class="chip ${p.id === pid ? 'active' : ''}" data-p="${p.id}">${p.species === 'gato' ? '🐱' : p.species === 'perro' ? '🐶' : '🐾'} ${esc(p.name)}</button>`).join('')}</div><div id="recs">${skeleton(2)}</div></div>`;
-      let recs, vaccines = [], dewormings = []; try {
-        [recs, vaccines, dewormings] = await Promise.all([
-          q('rec' + pid, () => sb.from('pet_medical_records').select('*').eq('pet_id', pid).order('visit_date', { ascending: false })),
-          q('vacc' + pid, () => sb.from('pet_vaccinations').select('*').eq('pet_id', pid).order('applied_on', { ascending: false })),
-          q('deworm' + pid, () => sb.from('pet_deworming').select('*').eq('pet_id', pid).order('applied_on', { ascending: false }))
-        ]);
-      } catch (e) { if ($('#recs')) $('#recs').innerHTML = `<div class="notice bad">${esc(errMsg(e))}</div>`; return; }
+      let recs; try { recs = await q('rec' + pid, () => sb.from('pet_medical_records').select('*').eq('pet_id', pid).order('visit_date', { ascending: false })); } catch (e) { if ($('#recs')) $('#recs').innerHTML = `<div class="notice bad">${esc(errMsg(e))}</div>`; return; }
       if (!$('#recs')) return;
       const next = recs.filter(r => r.next_visit && r.next_visit >= todayLP()).map(r => r.next_visit).sort()[0];
-      $('#recs').innerHTML = `<div class="cols2 clinical-summary"><div class="card"><b>💉 Vacunas</b><p>${vaccines.length} registros</p><small>${vaccines[0] ? esc(vaccines[0].vaccine_name) + ' · ' + fmtDay(vaccines[0].applied_on) : 'Sin vacunas registradas'}</small></div><div class="card"><b>🛡️ Desparasitación</b><p>${dewormings.length} registros</p><small>${dewormings[0] ? esc(dewormings[0].product_name) + ' · ' + fmtDay(dewormings[0].applied_on) : 'Sin registros'}</small></div></div>` +
-        (vaccines.length ? `<h3>Vacunación</h3><div class="card clinical-list">${vaccines.map(x=>`<p><b>${esc(x.vaccine_name)}</b> · ${fmtDay(x.applied_on)}${x.next_due ? ' · Próxima: '+fmtDay(x.next_due) : ''}</p>`).join('')}</div>` : '') +
-        (dewormings.length ? `<h3>Desparasitación</h3><div class="card clinical-list">${dewormings.map(x=>`<p><b>${esc(x.product_name)}</b> · ${fmtDay(x.applied_on)}${x.next_due ? ' · Próxima: '+fmtDay(x.next_due) : ''}</p>`).join('')}</div>` : '') +
-        (next ? `<div class="notice" style="background:var(--accent-soft)">🔔 <b>Próxima visita sugerida:</b> ${fmtDay(next)} <button class="btn sm accent" data-book="${pid}" style="margin-left:.5rem">Reservar</button></div>` : '') +
+      $('#recs').innerHTML = (next ? `<div class="notice" style="background:var(--accent-soft)">🔔 <b>Próxima visita sugerida:</b> ${fmtDay(next)} <button class="btn sm accent" data-book="${pid}" style="margin-left:.5rem">Reservar</button></div>` : '') +
         `<div data-group="1">${recs.map((r, i) => `<div class="acc ${i === 0 ? 'open' : ''}"><button class="acc-head" aria-expanded="${i === 0}"><span class="ico">🩺</span><span class="grow"><b>${esc(r.diagnosis.slice(0, 60))}${r.diagnosis.length > 60 ? '…' : ''}</b><span class="sub">${fmtDay(r.visit_date)}</span></span></button>
         <div class="acc-body"><div class="acc-in"><div class="acc-pad"><dl class="kv"><dt>Diagnóstico</dt><dd>${esc(r.diagnosis)}</dd><dt>Tratamiento</dt><dd>${esc(r.treatment || '—')}</dd><dt>Receta</dt><dd>${esc(r.prescription || '—')}</dd><dt>Peso</dt><dd>${r.weight_kg ? r.weight_kg + ' kg' : '—'}</dd><dt>Próxima visita</dt><dd>${r.next_visit ? fmtDay(r.next_visit) : '—'}</dd></dl></div></div></div></div>`).join('')}</div>` +
         (recs.length ? '' : empty('Aún no hay atenciones registradas para esta mascota.'));
@@ -343,13 +295,12 @@
       const list = S.services.filter(s => cat === 'todas' || s.category === cat);
       m.innerHTML = `<div class="view"><h2>Servicios</h2><div class="tabs"><button class="tab ${tab === 'svc' ? 'active' : ''}" data-tab="svc">Servicios (${S.services.length})</button><button class="tab ${tab === 'food' ? 'active' : ''}" data-tab="food">Comida para gatos</button></div>
       <div class="pane">${tab === 'svc' ? `<div class="chips">${['todas', ...Object.keys(CATS)].map(c => `<button class="chip ${cat === c ? 'active' : ''}" data-cat="${c}">${c === 'todas' ? 'Todos' : CATS[c]}</button>`).join('')}</div>
-        <div class="service-grid">${list.map((s,i) => { const photos = ['./imagenes/vet-consulta.webp','./imagenes/vet-evaluacion.webp','./imagenes/vet-cuidados.webp','./imagenes/vet-diagnostico.webp','./imagenes/vet-atencion-felina.webp']; const photo=photos[i%photos.length]; return `<article class="service-card"><button class="service-photo" type="button" data-zoom="${photo}" aria-label="Ampliar fotografía de ${esc(s.name)}"><img src="${photo}" alt="Atención veterinaria: ${esc(s.name)}" loading="lazy"><span>⌕ Ampliar</span></button><div class="service-copy"><div class="service-meta"><span>${esc(CATS[s.category] || s.category)}</span><b>${esc(s.price_label)}</b></div><h3>${esc(s.name)}</h3><p>${esc(s.description)}</p><details><summary>Ver detalles del servicio</summary><p>${esc(s.details || '')}</p><p class="hint">Atención para: ${esc(s.species || 'Perros y gatos')} · ${s.duration_min} minutos aproximados</p></details><button class="btn sm primary block" data-book="${s.id}">Reservar este servicio</button></div></article>`; }).join('')}</div>`
+        <div class="grid">${list.map(s => `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">${icoImg(s)}</span><span class="grow"><b>${esc(s.name)}</b><span class="sub">${esc(s.price_label)} · ${s.duration_min} min</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(s.description)}</p><p class="hint" style="margin:.4rem 0">${esc(s.details || '')}</p><dl class="kv"><dt>Para</dt><dd>${esc(s.species || '')}</dd></dl><div class="actions"><button class="btn sm primary" data-book="${s.id}">Reservar este servicio</button></div></div></div></div></div>`).join('')}</div>`
         : `<div class="grid">${(foods || []).map(f => `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">🐱</span><span class="grow"><b>${esc(f.name)}</b><span class="sub">${esc(f.kind)}</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(f.description)}</p><p class="hint" style="margin-top:.4rem">💡 ${esc(f.guidance)}</p></div></div></div></div>`).join('') || empty('Catálogo no disponible sin conexión.')}</div>`}</div></div>`;
     }
     m.onclick = e => {
       const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; return draw(); }
       const c = e.target.closest('[data-cat]'); if (c) { cat = c.dataset.cat; return draw(); }
-      const z = e.target.closest('[data-zoom]'); if (z) { P.modal(`<div class="photo-viewer"><button class="btn ghost" data-close>Cerrar ✕</button><img src="${z.dataset.zoom}" alt="Fotografía ampliada del servicio"><p class="hint">Fotografía ilustrativa de atención veterinaria</p></div>`); return; }
       const b = e.target.closest('[data-book]'); if (b) go('reservar', { service: b.dataset.book });
     };
     draw();
@@ -360,18 +311,18 @@
   async function vPersonal(m) {
     let tab = 'pend', af = 'hoy';
     async function draw() {
-      m.innerHTML = `<div class="view"><h2>Panel del personal</h2><div class="tabs"><button class="tab ${tab === 'pend' ? 'active' : ''}" data-tab="pend">Pendientes</button><button class="tab ${tab === 'agenda' ? 'active' : ''}" data-tab="agenda">Agenda</button><button class="tab ${tab === 'att' ? 'active' : ''}" data-tab="att">Registrar atención</button></div><div class="pane" id="sp">${skeleton(2)}</div></div>`;
+      m.innerHTML = `<div class="view"><h2>Panel del personal 🩺</h2><div class="tabs"><button class="tab ${tab === 'pend' ? 'active' : ''}" data-tab="pend">Pendientes</button><button class="tab ${tab === 'agenda' ? 'active' : ''}" data-tab="agenda">Agenda</button><button class="tab ${tab === 'att' ? 'active' : ''}" data-tab="att">Registrar atención</button></div><div class="pane" id="sp">${skeleton(2)}</div></div>`;
       try { await ({ pend: tPend, agenda: tAgenda, att: tAtt })[tab](); } catch (e) { const sp = $('#sp'); if (sp) sp.innerHTML = `<div class="notice bad">${esc(errMsg(e))}</div>`; }
     }
     const apptCard = (a, actions) => { a.pet = a.pet || { name: '—', species: 'otro' }; a.owner = a.owner || { full_name: '—' }; return `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">${icoImg(a.service)}</span><span class="grow"><b>${esc(a.service.name)}</b> · ${esc(a.pet.name)}<span class="sub">${fmtDate(a.starts_at)} · ${fmtTime(a.starts_at)}</span></span>${badge(a.status)}</button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><dl class="kv"><dt>Tutor</dt><dd>${esc(a.owner.full_name)}</dd><dt>Celular</dt><dd>${a.owner.phone ? `<a href="tel:+591${esc(a.owner.phone)}">${esc(a.owner.phone)}</a> · <a href="https://wa.me/591${esc(a.owner.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : '—'}</dd><dt>Nota</dt><dd>${esc(a.note || '—')}</dd></dl><div class="actions">${actions}</div></div></div></div></div>`; };
     async function tPend() {
       const r = await sb.from('appointment_requests').select(staffAppt).eq('status', 'pendiente').gte('ends_at', new Date().toISOString()).order('starts_at'); if (r.error) throw r.error;
-      const sp = $('#sp'); if (!sp) return; sp.innerHTML = `<div data-group="1">${r.data.map(a => apptCard(a, `<button class="btn sm primary" data-ok="${a.id}">Confirmar</button><button class="btn sm danger" data-no="${a.id}">Rechazar</button>`)).join('')}</div>${r.data.length ? '' : empty('No hay solicitudes pendientes. ¡Todo al día!')}`;
+      const sp = $('#sp'); if (!sp) return; sp.innerHTML = `<div data-group="1">${r.data.map(a => apptCard(a, `<button class="btn sm primary" data-ok="${a.id}">✔ Confirmar</button><button class="btn sm danger" data-no="${a.id}">✖ Rechazar</button>`)).join('')}</div>${r.data.length ? '' : empty('No hay solicitudes pendientes. ¡Todo al día! 🎉')}`;
     }
     async function tAgenda() {
       const t0 = new Date(toISO(todayLP(), '00:00')).toISOString(), t1 = new Date(toISO(af === 'hoy' ? addDays(todayLP(), 1) : af === 'semana' ? addDays(todayLP(), 7) : addDays(todayLP(), 120), '00:00')).toISOString();
       const r = await sb.from('appointment_requests').select(staffAppt).in('status', ['confirmada', 'completada']).gte('starts_at', t0).lt('starts_at', t1).order('starts_at'); if (r.error) throw r.error;
-      const sp = $('#sp'); if (!sp) return; sp.innerHTML = `<div class="chips">${[['hoy', 'Hoy'], ['semana', '7 días'], ['todas', 'Todas']].map(([k, l]) => `<button class="chip ${af === k ? 'active' : ''}" data-af="${k}">${l}</button>`).join('')}</div><div data-group="1">${r.data.map(a => apptCard(a, a.status === 'confirmada' ? `<button class="btn sm primary" data-att="${a.id}" data-pet="${a.pet_id}">Atender y registrar</button>` : '<small>Atención registrada</small>')).join('')}</div>${r.data.length ? '' : empty('No hay citas confirmadas en este rango.')}`;
+      const sp = $('#sp'); if (!sp) return; sp.innerHTML = `<div class="chips">${[['hoy', 'Hoy'], ['semana', '7 días'], ['todas', 'Todas']].map(([k, l]) => `<button class="chip ${af === k ? 'active' : ''}" data-af="${k}">${l}</button>`).join('')}</div><div data-group="1">${r.data.map(a => apptCard(a, a.status === 'confirmada' ? `<button class="btn sm primary" data-att="${a.id}" data-pet="${a.pet_id}">🩺 Atender y registrar</button>` : '<small>Atención registrada ✔</small>')).join('')}</div>${r.data.length ? '' : empty('No hay citas confirmadas en este rango.')}`;
       S._agenda = r.data;
     }
     async function tAtt() {
@@ -394,7 +345,7 @@
     draw();
   }
   function attentionForm({ pet, appointment }, done) {
-    P.modal(`<h2>Registrar atención</h2><form id="af" novalidate>
+    P.modal(`<h2>Registrar atención 🩺</h2><form id="af" novalidate>
       <div class="field"><label for="aDx">Diagnóstico *</label><textarea id="aDx" rows="2" maxlength="500"></textarea></div>
       <div class="field"><label for="aTx">Tratamiento</label><textarea id="aTx" rows="2" maxlength="500"></textarea></div>
       <div class="field"><label for="aRx">Receta / indicaciones</label><textarea id="aRx" rows="2" maxlength="500"></textarea></div>
@@ -412,7 +363,7 @@
   /* ======================= PERFIL ======================= */
   async function vPerfil(m) {
     await loadProfile(); const p = S.profile;
-    m.innerHTML = `<div class="view"><h2>Mi perfil</h2><p class="lead">${esc(session.user.email)} · ${S.staff ? 'Personal' : 'Tutor'}</p><div data-group="1">
+    m.innerHTML = `<div class="view"><h2>Mi perfil</h2><p class="lead">${esc(session.user.email)} · ${S.staff ? '🩺 Personal' : '🐾 Tutor'}</p><div data-group="1">
       <div class="acc open"><button class="acc-head" aria-expanded="true"><span class="ico">👤</span><b class="grow">Datos personales</b></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><form id="prf" novalidate>
         <div class="field"><label for="fName">Nombre completo</label><input id="fName" maxlength="80" value="${esc(p.full_name)}"></div>
         <div class="row2"><div class="field"><label for="fPhone">Celular</label><input id="fPhone" inputmode="numeric" maxlength="8" value="${esc(p.phone || '')}"></div><div class="field"><label for="fAddr">Dirección</label><input id="fAddr" maxlength="160" value="${esc(p.address || '')}"></div></div>
@@ -431,24 +382,7 @@
     if ($('#stf')) $('#stf').onsubmit = async e => { e.preventDefault(); const c = $('#sCode').value.trim(); if (!setField($('#sCode'), c.length >= 6 ? '' : 'Escribe el código completo.')) return; const b = $('#sGo'); btnBusy(b, true); const { error } = await sb.rpc('activate_staff', { p_code: c }); btnBusy(b, false); if (error) return setField($('#sCode'), errMsg(error)); P.confetti(); toast('¡Acceso de personal activado!'); await loadProfile(); buildNav(); go('personal'); };
   }
 
-  async function vBitacora(m) {
-    if (!S.staff) { m.innerHTML = `<div class="view"><h2>Acceso restringido</h2><p>Solo el personal autorizado puede consultar la bitácora.</p></div>`; return; }
-    const { data, error } = await sb.from('audit_events').select('id,event_type,entity_type,description,metadata,created_at,is_demo').order('created_at',{ascending:false}).limit(300);
-    if (error) throw error;
-    m.innerHTML = `<div class="view"><div class="audit-heading"><div><span class="eyebrow">CONTROL INTERNO</span><h2>Bitácora de eventos</h2><p class="lead">Registro cronológico de actividad. Los eventos de demostración están identificados.</p></div><button class="btn sm" id="auditRefresh">↻ Actualizar</button></div><div class="audit-stats"><div class="card"><b>${data.length}</b><span>Eventos visibles</span></div><div class="card"><b>${data.filter(x=>!x.is_demo).length}</b><span>Eventos reales registrados</span></div><div class="card"><b>${data.filter(x=>x.is_demo).length}</b><span>Datos de demostración</span></div></div><div class="audit-list">${data.map(x=>`<article class="audit-row"><span class="audit-dot"></span><div class="audit-content"><div><b>${esc(x.event_type.replaceAll('_',' '))}</b>${x.is_demo?'<span class="tag">DEMO</span>':''}<time>${new Date(x.created_at).toLocaleString('es-BO',{dateStyle:'medium',timeStyle:'short',timeZone:'America/La_Paz'})}</time></div><p>${esc(x.description)}</p><small>${esc(x.entity_type || 'sistema')} · #${x.id}</small></div></article>`).join('') || empty('Todavía no hay eventos.')}</div></div>`;
-    $('#auditRefresh').onclick=()=>go('bitacora');
-  }
-  async function vAvances(m) {
-    if (!advancesUnlocked) { m.innerHTML = `<div class="view"><h2>Acceso oculto</h2><p>Esta sección se abre tocando ocho veces el logotipo.</p></div>`; return; }
-    let weeks = [];
-    try { const r = await fetch('./data/curso.json', { cache: 'no-store' }); if (!r.ok) throw new Error('No se pudo leer el contenido'); weeks = await r.json(); }
-    catch (_) { m.innerHTML = `<div class="view"><h2>Avances</h2><div class="notice bad">No se pudo cargar el contenido de avances.</div></div>`; return; }
-    const total = weeks.reduce((n,w) => n + (w.temas || []).length, 0);
-    m.innerHTML = `<div class="view advances-view"><span class="eyebrow">SECCIÓN OCULTA · ACCESO POR LOGOTIPO</span><h2>Avances del proyecto</h2><p class="lead">Contenido académico y demostraciones. Desplázate dentro de este panel; el menú permanece disponible.</p><div class="card advances-summary"><b>${total} temas disponibles</b><p class="hint">Toca cada tema para ver su explicación.</p></div><div class="advances-scroll" tabindex="0" aria-label="Lista desplazable de avances">${weeks.map((w,i)=>`<section class="card advance-week"><span class="eyebrow">SEMANA ${w.semana || i+1}</span><h3>${esc(w.titulo || 'Avances')}</h3><div data-group="1">${(w.temas||[]).map(t=>`<article class="acc"><button class="acc-head" type="button" aria-expanded="false"><span class="ico">✦</span><span class="grow"><b>${esc(t.t || t.titulo || 'Tema')}</b><span class="sub">${esc(t.id || '')}</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(t.d || t.descripcion || '')}</p>${t.demo==='tema'?'<button class="btn sm" data-advance-theme>Probar tema</button>':''}${t.demo==='toast'?'<button class="btn sm" data-advance-toast>Ver alertas</button>':''}${t.demo==='filtro'?'<button class="btn sm" data-nav="servicios">Abrir catálogo</button>':''}</div></div></div></article>`).join('')}</div></section>`).join('')}</div></div>`;
-    m.querySelector('[data-advance-theme]')?.addEventListener('click', () => $('#themeBtn')?.click());
-    m.querySelector('[data-advance-toast]')?.addEventListener('click', () => { P.toast('Ejemplo de confirmación.', 'ok'); P.toast('Ejemplo de advertencia.', 'err'); });
-  }
-  const VIEWS = { inicio: vInicio, mascotas: vMascotas, reservar: vReservar, turnos: vTurnos, historial: vHistorial, servicios: vServicios, personal: vPersonal, bitacora: vBitacora, perfil: vPerfil, avances: vAvances };
+  const VIEWS = { inicio: vInicio, mascotas: vMascotas, reservar: vReservar, turnos: vTurnos, historial: vHistorial, servicios: vServicios, personal: vPersonal, perfil: vPerfil };
   try { await loadProfile(); } catch (e) { $('#main').innerHTML = `<div class="view">${empty('No se pudo cargar tu perfil. ' + esc(errMsg(e)), '<button class="btn primary" onclick="location.reload()">Reintentar</button>')}</div>`; return; }
   buildNav(); go(location.hash.slice(1) || 'inicio');
   document.addEventListener('visibilitychange', () => { if (!document.hidden && ['turnos', 'personal', 'inicio'].includes(current) && navigator.onLine && !$('.modal-bg')) refresh(); });

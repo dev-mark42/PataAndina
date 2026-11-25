@@ -1,19 +1,19 @@
 {
   "id": "./index.html",
-  "name": "Pata Andina Vet | Centro Veterinario",
+  "name": "Pata Andina Vet",
   "short_name": "Pata Andina",
-  "description": "Tu espacio de cliente: mascotas, citas, servicios e historial veterinario.",
+  "description": "Reserva citas, perfiles de mascotas e historial médico para Pata Andina Vet.",
   "lang": "es",
-  "start_url": "./app.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "display_override": [
     "standalone",
     "minimal-ui"
   ],
-  "orientation": "portrait-primary",
-  "background_color": "#f7f6f1",
-  "theme_color": "#244b3b",
+  "orientation": "any",
+  "background_color": "#fbfaf6",
+  "theme_color": "#315d4d",
   "icons": [
     {
       "src": "./icons/icon-192.png",

@@ -1,12 +1,3 @@
-{
-  "name": "pata-andina",
-  "version": "3.0.0",
-  "private": true,
-  "scripts": {
-    "start": "npx serve . -l 5500",
-    "test": "node tests/links.test.js && node tests/guest-readonly.test.js"
-  },
-  "devDependencies": {
-    "jsdom": "^24.0.0"
-  }
-}
+{ "name": "pata-andina", "version": "2.0.0", "private": true,
+  "scripts": { "start": "npx serve . -l 5500", "test": "node tests/ui.test.js" },
+  "devDependencies": { "jsdom": "^24.0.0" } }

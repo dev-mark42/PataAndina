@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#244b3b">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#315d4d">
   <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
   <title>Pata Andina Vet</title>
   <link rel="manifest" href="./manifest.json"><link rel="icon" type="image/png" href="./icons/icon-192.png"><link rel="apple-touch-icon" href="./icons/icon-192.png">
@@ -12,14 +11,12 @@
 </head>
 <body class="app">
   <header class="top">
-    <button class="icon-btn menu-btn" data-nav="__more" aria-label="Abrir menú"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-    <div class="brand"><b>✚</b><span>PATA ANDINA</span></div>
+    <button class="brand brand-trigger" id="brandLogo" type="button" aria-label="Pata Andina"><b>✚</b><span>PATA ANDINA</span></button>
     <span class="net" id="net" data-s="on"><i></i><b>En línea</b></span>
     <button class="btn sm install" id="installBtn" hidden>📲 Instalar</button>
     <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema">🌙</button>
     <button class="icon-btn" id="logoutTop" aria-label="Cerrar sesión" title="Cerrar sesión">⎋</button>
   </header>
-  <div class="side-backdrop" aria-hidden="true"></div>
   <nav class="side" id="side" aria-label="Menú principal"></nav>
   <main id="main" tabindex="-1"><div class="view"><div class="skeleton"></div><br><div class="skeleton"></div></div></main>
   <nav class="dock" id="dock" aria-label="Menú móvil"></nav>

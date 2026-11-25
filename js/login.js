@@ -2,13 +2,12 @@
 (function () {
   'use strict';
   const { $, $$, v, sb, toast, errMsg, btnBusy, setField, liveValidate } = Pata;
-  $('#logoMark').innerHTML = ART.paw(); $('#ecg').innerHTML = ART.ecg(); Pata.paws($('#paws'));
+  $('#heroCat').innerHTML = ART.cat(); $('#heroDog').innerHTML = ART.dog();
+  $('#walkDog').innerHTML = ART.dog(); $('#walkCat').innerHTML = ART.cat();
+  $('#miniPets').innerHTML = ART.cat() + ART.dog(); $('#ecg').innerHTML = ART.ecg(); Pata.paws($('#paws'));
   Pata.initTheme($('#themeBtn')); Pata.initPWA($('#installBtn'));
   Pata.onNet = on => { $('#offWarn').hidden = on; }; Pata.initNet(null);
   if (!Pata.configured) $('#cfgWarn').hidden = false;
-
-  /* El modo invitado ahora es público y visible desde el login. No requiere sesión. */
-
 
   /* ---- Pestañas ---- */
   function show(name) {
@@ -17,7 +16,7 @@
     $('#authTabs').hidden = name === 'newpass';
   }
   $('#authTabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) show(t.dataset.tab); });
-  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) show(g.dataset.go); const b = e.target.closest('.eye-btn'); if (b) { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? 'Ver' : 'Ocultar'; } });
+  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) show(g.dataset.go); const b = e.target.closest('.eye-btn'); if (b) { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? '👁️' : '🙈'; } });
   const msg = (el, text, kind) => { el.hidden = !text; el.textContent = text || ''; el.className = 'notice' + (kind ? ' ' + kind : ''); };
   const meter = (inp, bar, txt) => inp.addEventListener('input', () => { const s = v.strength(inp.value); bar.style.width = s * 25 + '%'; bar.style.background = ['#b4483a', '#b4483a', '#b7791f', '#2f7d57', '#2f7d57'][s]; if (txt) txt.textContent = ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Excelente'][s]; });
   meter($('#rPass'), $('#meter'), $('#meterTxt')); meter($('#nPass'), $('#nMeter'));
@@ -52,28 +51,13 @@
     if (!ok) return;
     if (!Pata.configured) return msg($('#regMsg'), 'La app no está configurada con Supabase (js/config.js).', 'bad');
     const b = $('#regBtn'); btnBusy(b, true);
-    const { data, error } = await sb.auth.signUp({ email: $('#rEmail').value.trim(), password: $('#rPass').value, options: { data: { full_name: $('#rName').value.trim().replace(/\s+/g, ' '), phone: $('#rPhone').value }, emailRedirectTo: new URL('index.html?confirmed=1', location.href).href } });
+    const { data, error } = await sb.auth.signUp({ email: $('#rEmail').value.trim(), password: $('#rPass').value, options: { data: { full_name: $('#rName').value.trim().replace(/\s+/g, ' '), phone: $('#rPhone').value }, emailRedirectTo: new URL('index.html', location.href).href } });
     btnBusy(b, false);
-    if (error) {
-      if (/rate limit|too many|email rate/i.test(error.message || '')) {
-        msg($('#regMsg'), 'Supabase limitó temporalmente el envío de correos. No repitas el registro. Si tu usuario ya existe, vuelve a Ingresar; si todavía no existe, créalo desde Supabase > Authentication > Users con Auto Confirm User.', 'bad');
-      } else {
-        msg($('#regMsg'), errMsg(error), 'bad');
-      }
-      return;
-    }
+    if (error) return msg($('#regMsg'), errMsg(error), 'bad');
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) return msg($('#regMsg'), 'Ese correo ya tiene una cuenta. Ingresa o recupera tu contraseña.', 'bad');
     Pata.confetti();
-    // El registro nunca abre el panel automáticamente: el usuario siempre inicia sesión manualmente.
-    if (data.session) await sb.auth.signOut();
-    show('login');
-    $('#lEmail').value = $('#rEmail').value.trim();
-    $('#lPass').value = '';
-    msg($('#loginMsg'), data.session
-      ? '¡Cuenta creada! Ya puedes iniciar sesión con tu correo y contraseña.'
-      : '¡Cuenta creada! Confirma tu correo desde el enlace que te enviamos. Después volverás aquí para iniciar sesión.', 'ok');
-    $('#regForm').reset();
-    $$('#regForm .field').forEach(f => f.classList.remove('valid','invalid'));
+    if (data.session) { toast('¡Cuenta creada! Bienvenido/a.'); setTimeout(() => location.replace('./app.html'), 700); }
+    else { msg($('#regMsg'), '¡Cuenta creada! Te enviamos un correo para confirmarla. Ábrelo y luego ingresa.', 'ok'); $('#regForm').reset(); $$('#regForm .field').forEach(f => f.classList.remove('valid')); }
   });
 
   /* ---- Recuperar contraseña (envía el correo) ---- */
@@ -104,16 +88,11 @@
 
   /* ---- Estado inicial: ¿viene del correo de recuperación? ¿ya hay sesión? ---- */
   const hash = location.hash + location.search;
-  const emailConfirmed = new URLSearchParams(location.search).get('confirmed') === '1';
   let recovery = /type=recovery/.test(hash);
   if (recovery) show('newpass');
   if (Pata.configured) {
     sb.auth.onAuthStateChange((ev) => { if (ev === 'PASSWORD_RECOVERY') { recovery = true; show('newpass'); } });
-    sb.auth.getSession().then(async ({ data }) => {
-      if (emailConfirmed && data.session) await sb.auth.signOut();
-      else if (data.session && !recovery) location.replace('./app.html');
-      if (emailConfirmed) { show('login'); msg($('#loginMsg'), 'Correo confirmado correctamente. Ahora inicia sesión para entrar a tu cuenta.', 'ok'); history.replaceState({}, '', location.pathname); }
-    });
+    sb.auth.getSession().then(({ data }) => { if (data.session && !recovery) location.replace('./app.html'); });
     if (/error_description=/.test(hash)) { const m = decodeURIComponent((hash.match(/error_description=([^&]+)/) || [])[1] || '').replace(/\+/g, ' '); show('login'); msg($('#loginMsg'), /expired|invalid/i.test(m) ? 'El enlace venció o ya fue usado. Pide uno nuevo en "Olvidé mi clave".' : m, 'bad'); }
   }
 })();
