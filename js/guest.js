@@ -16,8 +16,8 @@
     ['Perfil y contraseña', 'Pertenecen a una cuenta real.', 'profiles'],
     ['Panel del personal', 'Requiere una cuenta con rol de personal.', null]
   ];
-  const S = { tab: 'curso', course: null, services: null, cat: 'todas', q: '', probe: null };
-  const TABS = [['curso', 'Avances del curso'], ['servicios', 'Servicios'], ['bloqueado', 'Bloqueado']];
+  const S = { tab: 'galeria', course: null, services: null, cat: 'todas', q: '', probe: null };
+  const TABS = [['curso', 'Avances'], ['galeria', 'Galería y videos'], ['servicios', 'Servicios'], ['bloqueado', 'Accesos']];
 
   async function curso() {
     if (!S.course) { const r = await fetch('./data/curso.json'); if (!r.ok) throw new Error('No se pudo cargar el curso.'); S.course = await r.json(); }
@@ -28,15 +28,49 @@
 
   async function servicios() {
     if (!S.services) {
-      if (!P.sb) throw new Error('Falta configurar Supabase en js/config.js');
-      const r = await P.sb.from('services_catalog').select('id,name,category,description,details,price_label,duration_min,tag,species,icon').order('sort_order');
-      if (r.error) throw r.error; S.services = r.data;
+      if (!P.sb) {
+        S.services = [
+          {name:'Consulta veterinaria general',category:'consulta',description:'Evaluación física, revisión general y orientación para el cuidado diario.',details:'Para perros y gatos · atención con cita',price_label:'Desde Bs 60',duration_min:30,icon:'consulta'},
+          {name:'Consulta felina',category:'consulta',description:'Atención enfocada en el comportamiento y las necesidades de los gatos.',details:'Manejo amable y ambiente tranquilo',price_label:'Desde Bs 70',duration_min:30,icon:'gato'},
+          {name:'Control de cachorro o gatito',category:'prevencion',description:'Seguimiento de crecimiento, peso, alimentación y calendario preventivo.',details:'Ideal para primeras visitas',price_label:'Desde Bs 50',duration_min:25,icon:'control'},
+          {name:'Vacunación canina',category:'prevencion',description:'Revisión y aplicación de vacunas según edad e historial.',details:'Dosis indicada por el profesional',price_label:'Desde Bs 80',duration_min:20,icon:'vacuna'},
+          {name:'Vacunación felina',category:'prevencion',description:'Plan preventivo y aplicación de vacunas para gatos.',details:'Incluye revisión previa',price_label:'Desde Bs 80',duration_min:20,icon:'vacuna'},
+          {name:'Desparasitación',category:'prevencion',description:'Control de parásitos internos y externos con dosis indicada por el profesional.',details:'La dosis depende del peso',price_label:'Desde Bs 45',duration_min:20,icon:'prevencion'},
+          {name:'Evaluación y limpieza dental',category:'consulta',description:'Valoración de salud oral y orientación para higiene dental.',details:'La limpieza se programa según evaluación',price_label:'A cotizar',duration_min:45,icon:'odontologia'},
+          {name:'Evaluación para esterilización',category:'procedimientos',description:'Valoración previa, explicación del procedimiento y cuidados posteriores.',details:'Requiere evaluación clínica',price_label:'A cotizar',duration_min:35,icon:'cirugia'},
+          {name:'Valoración quirúrgica',category:'procedimientos',description:'Evaluación del paciente y orientación sobre el procedimiento indicado.',details:'El presupuesto depende del caso',price_label:'A cotizar',duration_min:40,icon:'cirugia'},
+          {name:'Curaciones y control ambulatorio',category:'procedimientos',description:'Limpieza, cuidado y seguimiento de heridas.',details:'Materiales según evaluación',price_label:'Desde Bs 70',duration_min:25,icon:'curaciones'},
+          {name:'Toma de muestra y laboratorio',category:'diagnostico',description:'Toma de muestras y apoyo de laboratorio para orientar el diagnóstico.',details:'Estudios según indicación profesional',price_label:'Desde Bs 90',duration_min:30,icon:'laboratorio'},
+          {name:'Ecografía o radiografía',category:'diagnostico',description:'Estudios de imagen para complementar la evaluación clínica.',details:'Disponibilidad según agenda',price_label:'A cotizar',duration_min:40,icon:'imagenologia'},
+          {name:'Consulta a domicilio',category:'consulta',description:'Atención veterinaria coordinada en el domicilio del tutor.',details:'Cobertura y costo según zona',price_label:'Desde Bs 100',duration_min:45,icon:'domicilio'},
+          {name:'Baño y peluquería higiénica',category:'bienestar',description:'Baño, cepillado y cuidado estético con manejo amable.',details:'Según tamaño y tipo de pelaje',price_label:'Desde Bs 50',duration_min:60,icon:'peluqueria'},
+          {name:'Orientación nutricional',category:'bienestar',description:'Recomendaciones de alimentación según etapa de vida y necesidades.',details:'Incluye revisión de hábitos',price_label:'Desde Bs 60',duration_min:25,icon:'nutricion'},
+          {name:'Microchip de identificación',category:'prevencion',description:'Identificación permanente para apoyar la recuperación de mascotas.',details:'Incluye registro de datos de identificación',price_label:'Desde Bs 120',duration_min:20,icon:'control'}
+        ];
+      } else {
+        const r = await P.sb.from('services_catalog').select('id,name,category,description,details,price_label,duration_min,tag,species,icon').order('sort_order');
+        if (r.error) throw r.error; S.services = r.data;
+      }
     }
     const k = S.q.trim().toLowerCase(), list = S.services.filter(s => (S.cat === 'todas' || s.category === S.cat) && (!k || (s.name + ' ' + s.description).toLowerCase().includes(k)));
     return `<div class="field"><label for="gq">Buscar servicio</label><input id="gq" type="search" value="${esc(S.q)}" placeholder="Vacuna, dental, baño…"></div>
       <div class="chips">${['todas', ...Object.keys(CATS)].map(c => `<button class="chip ${S.cat === c ? 'active' : ''}" data-cat="${c}">${c === 'todas' ? 'Todos' : CATS[c]}</button>`).join('')}</div>
       <p class="hint" style="margin-bottom:.6rem">${list.length} de ${S.services.length} servicios · datos en vivo de la base de datos</p>
       <div class="grid">${list.map(s => `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico"><img src="./imagenes/${esc(s.icon || 'consulta')}.svg" alt="" loading="lazy"></span><span class="grow"><b>${esc(s.name)}</b><span class="sub">${esc(s.price_label)} · ${s.duration_min} min</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(s.description)}</p><p class="hint" style="margin:.4rem 0">${esc(s.details || '')}</p><div class="actions"><button class="btn sm" data-locked="Reservar">Reservar (bloqueado)</button></div></div></div></div></div>`).join('')}</div>${list.length ? '' : '<p class="empty">Ningún servicio coincide con tu búsqueda.</p>'}`;
+  }
+
+  async function galeria() {
+    const items = [
+      ['Consulta y revisión','Revisión general y escucha del tutor','https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&w=900&q=85','Consulta veterinaria'],
+      ['Cuidado preventivo','Control, vacunación y seguimiento','https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=900&q=85','Vacunación de mascotas'],
+      ['Bienestar y recuperación','Acompañamiento después de cada procedimiento','https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=900&q=85','Cuidados veterinarios']
+    ];
+    if (!S.services) { try { await servicios(); } catch (_) { } }
+    const videos = (S.services || []).map(s => [s.name, `Video demostrativo sobre ${s.name.toLowerCase()}`, `${s.name} veterinaria mascotas procedimiento`]);
+    return `<section class="gallery-intro"><span class="eyebrow">PATA ANDINA · CUIDADO CON CARIÑO</span><h2>Así acompañamos cada patita</h2><p>Un vistazo ilustrativo a las etapas de atención. Las imágenes son de referencia y los procedimientos se realizan según evaluación veterinaria.</p></section>
+      <div class="process-grid">${items.map((x,i)=>`<article class="process-card"><img src="${x[2]}" alt="${esc(x[0])}" loading="lazy"><div class="process-copy"><span>0${i+1} · PROCESO</span><h3>${esc(x[0])}</h3><p>${esc(x[1])}</p></div></article>`).join('')}</div>
+      <div class="section-head"><div><span class="eyebrow">EN VIDEO</span><h2>Conoce nuestros servicios</h2><p>Abre una búsqueda de videos relacionados con cada servicio para ver demostraciones.</p></div></div>
+      <div class="video-grid">${videos.map((v,i)=>`<a class="video-card" href="https://www.youtube.com/results?search_query=${encodeURIComponent(v[2])}" target="_blank" rel="noopener noreferrer"><span class="video-thumb"><span class="play">▶</span><small>VIDEO ${String(i+1).padStart(2,'0')}</small></span><b>${esc(v[0])}</b><span>${esc(v[1])}</span><em>Buscar demostración en video <strong>↗</strong></em></a>`).join('')}</div>`;
   }
 
   async function bloqueado() {
@@ -50,7 +84,7 @@
   async function draw() {
     $('#gTabs').innerHTML = TABS.map(([k, l]) => `<button class="tab ${S.tab === k ? 'active' : ''}" role="tab" aria-selected="${S.tab === k}" data-tab="${k}">${l}</button>`).join('');
     const pane = $('#gPane'); if (!(S.tab === 'servicios' && S.services)) pane.innerHTML = '<div class="skeleton"></div>';
-    try { pane.innerHTML = `<div class="pane">${await ({ curso, servicios, bloqueado })[S.tab]()}</div>`; }
+    try { pane.innerHTML = `<div class="pane">${await ({ curso, galeria, servicios, bloqueado })[S.tab]()}</div>`; }
     catch (e) { pane.innerHTML = `<div class="notice bad">${esc(errMsg(e))}</div>`; }
     $$('.bar i', pane).forEach(i => requestAnimationFrame(() => requestAnimationFrame(() => { i.style.width = i.dataset.w + '%'; })));
   }

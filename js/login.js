@@ -60,13 +60,21 @@
     if (!ok) return;
     if (!Pata.configured) return msg($('#regMsg'), 'La app no está configurada con Supabase (js/config.js).', 'bad');
     const b = $('#regBtn'); btnBusy(b, true);
-    const { data, error } = await sb.auth.signUp({ email: $('#rEmail').value.trim(), password: $('#rPass').value, options: { data: { full_name: $('#rName').value.trim().replace(/\s+/g, ' '), phone: $('#rPhone').value }, emailRedirectTo: new URL('index.html', location.href).href } });
+    const { data, error } = await sb.auth.signUp({ email: $('#rEmail').value.trim(), password: $('#rPass').value, options: { data: { full_name: $('#rName').value.trim().replace(/\s+/g, ' '), phone: $('#rPhone').value }, emailRedirectTo: new URL('index.html?confirmed=1', location.href).href } });
     btnBusy(b, false);
     if (error) return msg($('#regMsg'), errMsg(error), 'bad');
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) return msg($('#regMsg'), 'Ese correo ya tiene una cuenta. Ingresa o recupera tu contraseña.', 'bad');
     Pata.confetti();
-    if (data.session) { toast('¡Cuenta creada! Bienvenido/a.'); setTimeout(() => location.replace('./app.html'), 700); }
-    else { msg($('#regMsg'), '¡Cuenta creada! Te enviamos un correo para confirmarla. Ábrelo y luego ingresa.', 'ok'); $('#regForm').reset(); $$('#regForm .field').forEach(f => f.classList.remove('valid')); }
+    // El registro nunca abre el panel automáticamente: el usuario siempre inicia sesión manualmente.
+    if (data.session) await sb.auth.signOut();
+    show('login');
+    $('#lEmail').value = $('#rEmail').value.trim();
+    $('#lPass').value = '';
+    msg($('#loginMsg'), data.session
+      ? '¡Cuenta creada! Ya puedes iniciar sesión con tu correo y contraseña.'
+      : '¡Cuenta creada! Confirma tu correo desde el enlace que te enviamos. Después volverás aquí para iniciar sesión.', 'ok');
+    $('#regForm').reset();
+    $$('#regForm .field').forEach(f => f.classList.remove('valid','invalid'));
   });
 
   /* ---- Recuperar contraseña (envía el correo) ---- */
@@ -97,11 +105,16 @@
 
   /* ---- Estado inicial: ¿viene del correo de recuperación? ¿ya hay sesión? ---- */
   const hash = location.hash + location.search;
+  const emailConfirmed = new URLSearchParams(location.search).get('confirmed') === '1';
   let recovery = /type=recovery/.test(hash);
   if (recovery) show('newpass');
   if (Pata.configured) {
     sb.auth.onAuthStateChange((ev) => { if (ev === 'PASSWORD_RECOVERY') { recovery = true; show('newpass'); } });
-    sb.auth.getSession().then(({ data }) => { if (data.session && !recovery) location.replace('./app.html'); });
+    sb.auth.getSession().then(async ({ data }) => {
+      if (emailConfirmed && data.session) await sb.auth.signOut();
+      else if (data.session && !recovery) location.replace('./app.html');
+      if (emailConfirmed) { show('login'); msg($('#loginMsg'), 'Correo confirmado correctamente. Ahora inicia sesión para entrar a tu cuenta.', 'ok'); history.replaceState({}, '', location.pathname); }
+    });
     if (/error_description=/.test(hash)) { const m = decodeURIComponent((hash.match(/error_description=([^&]+)/) || [])[1] || '').replace(/\+/g, ' '); show('login'); msg($('#loginMsg'), /expired|invalid/i.test(m) ? 'El enlace venció o ya fue usado. Pide uno nuevo en "Olvidé mi clave".' : m, 'bad'); }
   }
 })();

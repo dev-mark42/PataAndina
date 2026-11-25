@@ -47,8 +47,8 @@ Los correos y contraseñas de prueba los defines tú al registrarte; el reposito
 
 ## 2b. Modo invitado (acceso oculto)
 En la pantalla de acceso, toca el **logo 7 veces seguidas** (cada toque a menos de 1,5 s del anterior): aparece una advertencia.
-Un toque más en el logo (antes de 6 s) abre `guest.html`. Sin esa secuencia, `guest.html` redirige al login.
-Muestra los **avances del curso** (`data/curso.json`: semanas 1 a 3, 16 temas), el **catálogo de servicios leído en vivo de la base**
+El **octavo toque** dentro de los siguientes 6 segundos abre `guest.html`. Sin esa secuencia, `guest.html` redirige al login.
+La página abre en **Galería y videos**: incluye tres fotografías de referencia, tarjetas de video por cada servicio (abren búsquedas de videos relacionados) y el catálogo de servicios. La pestaña **Avances** conserva el seguimiento del curso (`data/curso.json`: semanas 1 a 3, 16 temas), el **catálogo de servicios leído en vivo de la base**
 y una pestaña **Bloqueado** que comprueba contra la BD que citas, mascotas, historial y perfiles no son accesibles sin cuenta.
 El bloqueo real lo hace la base (RLS: `anon` solo puede leer `services_catalog`); la interfaz solo lo refleja.
 

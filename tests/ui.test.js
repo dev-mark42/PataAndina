@@ -34,8 +34,8 @@ const submit = (w, sel) => w.document.querySelector(sel).dispatchEvent(new w.Eve
   ok(w.document.querySelector('#rPhone').closest('.field').classList.contains('invalid'), 'celular que no empieza con 6/7 rechazado');
   ok(w.document.querySelector('#rPass').closest('.field').classList.contains('invalid'), 'contraseña débil rechazada');
   fill(w, '#rPhone', '71234567'); fill(w, '#rPass', 'Clave1234'); fill(w, '#rPass2', 'Clave1234'); w.document.querySelector('#rTerms').checked = true;
-  submit(w, '#regForm'); await wait(() => !w.document.querySelector('#regMsg').hidden);
-  ok(/confirmar/.test(w.document.querySelector('#regMsg').textContent), 'registro OK pide confirmar correo');
+  submit(w, '#regForm'); await wait(() => !w.document.querySelector('#loginMsg').hidden);
+  ok(/confirmar/.test(w.document.querySelector('#loginMsg').textContent) && !w.document.querySelector('#loginForm').hidden, 'registro OK vuelve al login y pide confirmar correo');
   ok(w.__lastSignUp.data.full_name === 'Ana Pérez' && w.__lastSignUp.data.phone === '71234567', 'metadatos enviados a signUp');
   click(w, '[data-tab=recover]'); fill(w, '#cEmail', 'ana@test.com'); submit(w, '#recForm'); await wait(() => !w.document.querySelector('#recMsg').hidden);
   ok(w.__reset.email === 'ana@test.com' && /index\.html/.test(w.__reset.o.redirectTo), 'recuperación envía correo con redirectTo a index.html');
