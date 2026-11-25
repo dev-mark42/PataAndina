@@ -49,7 +49,7 @@
   const NAV = [
     { id: 'inicio', t: 'Inicio', g: 'Principal' }, { id: 'reservar', t: 'Reservar', g: 'Principal' }, { id: 'turnos', t: 'Mis citas', g: 'Principal' },
     { id: 'mascotas', t: 'Mascotas', g: 'Mis mascotas' }, { id: 'historial', t: 'Historial', g: 'Mis mascotas' },
-    { id: 'servicios', t: 'Servicios', g: 'Clínica' }, { id: 'personal', t: 'Personal', g: 'Clínica', staff: true },
+    { id: 'servicios', t: 'Servicios', g: 'Clínica' }, { id: 'personal', t: 'Personal', g: 'Clínica', staff: true }, { id: 'bitacora', t: 'Bitácora', g: 'Administración', staff: true },
     { id: 'perfil', t: 'Perfil', g: 'Cuenta' }
   ];
   const DOCK = ['inicio', 'reservar', 'turnos', 'mascotas'];
@@ -320,12 +320,13 @@
       const list = S.services.filter(s => cat === 'todas' || s.category === cat);
       m.innerHTML = `<div class="view"><h2>Servicios</h2><div class="tabs"><button class="tab ${tab === 'svc' ? 'active' : ''}" data-tab="svc">Servicios (${S.services.length})</button><button class="tab ${tab === 'food' ? 'active' : ''}" data-tab="food">Comida para gatos</button></div>
       <div class="pane">${tab === 'svc' ? `<div class="chips">${['todas', ...Object.keys(CATS)].map(c => `<button class="chip ${cat === c ? 'active' : ''}" data-cat="${c}">${c === 'todas' ? 'Todos' : CATS[c]}</button>`).join('')}</div>
-        <div class="grid">${list.map(s => `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">${icoImg(s)}</span><span class="grow"><b>${esc(s.name)}</b><span class="sub">${esc(s.price_label)} · ${s.duration_min} min</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(s.description)}</p><p class="hint" style="margin:.4rem 0">${esc(s.details || '')}</p><dl class="kv"><dt>Para</dt><dd>${esc(s.species || '')}</dd></dl><div class="actions"><button class="btn sm primary" data-book="${s.id}">Reservar este servicio</button></div></div></div></div></div>`).join('')}</div>`
+        <div class="service-grid">${list.map((s,i) => { const photos = ['./imagenes/vet-consulta.webp','./imagenes/vet-evaluacion.webp','./imagenes/vet-cuidados.webp','./imagenes/vet-diagnostico.webp','./imagenes/vet-atencion-felina.webp']; const photo=photos[i%photos.length]; return `<article class="service-card"><button class="service-photo" type="button" data-zoom="${photo}" aria-label="Ampliar fotografía de ${esc(s.name)}"><img src="${photo}" alt="Atención veterinaria: ${esc(s.name)}" loading="lazy"><span>⌕ Ampliar</span></button><div class="service-copy"><div class="service-meta"><span>${esc(CATS[s.category] || s.category)}</span><b>${esc(s.price_label)}</b></div><h3>${esc(s.name)}</h3><p>${esc(s.description)}</p><details><summary>Ver detalles del servicio</summary><p>${esc(s.details || '')}</p><p class="hint">Atención para: ${esc(s.species || 'Perros y gatos')} · ${s.duration_min} minutos aproximados</p></details><button class="btn sm primary block" data-book="${s.id}">Reservar este servicio</button></div></article>`; }).join('')}</div>`
         : `<div class="grid">${(foods || []).map(f => `<div class="acc"><button class="acc-head" aria-expanded="false"><span class="ico">🐱</span><span class="grow"><b>${esc(f.name)}</b><span class="sub">${esc(f.kind)}</span></span></button><div class="acc-body"><div class="acc-in"><div class="acc-pad"><p>${esc(f.description)}</p><p class="hint" style="margin-top:.4rem">💡 ${esc(f.guidance)}</p></div></div></div></div>`).join('') || empty('Catálogo no disponible sin conexión.')}</div>`}</div></div>`;
     }
     m.onclick = e => {
       const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; return draw(); }
       const c = e.target.closest('[data-cat]'); if (c) { cat = c.dataset.cat; return draw(); }
+      const z = e.target.closest('[data-zoom]'); if (z) { P.modal(`<div class="photo-viewer"><button class="btn ghost" data-close>Cerrar ✕</button><img src="${z.dataset.zoom}" alt="Fotografía ampliada del servicio"><p class="hint">Fotografía ilustrativa de atención veterinaria</p></div>`); return; }
       const b = e.target.closest('[data-book]'); if (b) go('reservar', { service: b.dataset.book });
     };
     draw();
@@ -407,7 +408,14 @@
     if ($('#stf')) $('#stf').onsubmit = async e => { e.preventDefault(); const c = $('#sCode').value.trim(); if (!setField($('#sCode'), c.length >= 6 ? '' : 'Escribe el código completo.')) return; const b = $('#sGo'); btnBusy(b, true); const { error } = await sb.rpc('activate_staff', { p_code: c }); btnBusy(b, false); if (error) return setField($('#sCode'), errMsg(error)); P.confetti(); toast('¡Acceso de personal activado!'); await loadProfile(); buildNav(); go('personal'); };
   }
 
-  const VIEWS = { inicio: vInicio, mascotas: vMascotas, reservar: vReservar, turnos: vTurnos, historial: vHistorial, servicios: vServicios, personal: vPersonal, perfil: vPerfil };
+  async function vBitacora(m) {
+    if (!S.staff) { m.innerHTML = `<div class="view"><h2>Acceso restringido</h2><p>Solo el personal autorizado puede consultar la bitácora.</p></div>`; return; }
+    const { data, error } = await sb.from('audit_events').select('id,event_type,entity_type,description,metadata,created_at,is_demo').order('created_at',{ascending:false}).limit(300);
+    if (error) throw error;
+    m.innerHTML = `<div class="view"><div class="audit-heading"><div><span class="eyebrow">CONTROL INTERNO</span><h2>Bitácora de eventos</h2><p class="lead">Registro cronológico de actividad. Los eventos de demostración están identificados.</p></div><button class="btn sm" id="auditRefresh">↻ Actualizar</button></div><div class="audit-stats"><div class="card"><b>${data.length}</b><span>Eventos visibles</span></div><div class="card"><b>${data.filter(x=>!x.is_demo).length}</b><span>Eventos reales registrados</span></div><div class="card"><b>${data.filter(x=>x.is_demo).length}</b><span>Datos de demostración</span></div></div><div class="audit-list">${data.map(x=>`<article class="audit-row"><span class="audit-dot"></span><div class="audit-content"><div><b>${esc(x.event_type.replaceAll('_',' '))}</b>${x.is_demo?'<span class="tag">DEMO</span>':''}<time>${new Date(x.created_at).toLocaleString('es-BO',{dateStyle:'medium',timeStyle:'short',timeZone:'America/La_Paz'})}</time></div><p>${esc(x.description)}</p><small>${esc(x.entity_type || 'sistema')} · #${x.id}</small></div></article>`).join('') || empty('Todavía no hay eventos.')}</div></div>`;
+    $('#auditRefresh').onclick=()=>go('bitacora');
+  }
+  const VIEWS = { inicio: vInicio, mascotas: vMascotas, reservar: vReservar, turnos: vTurnos, historial: vHistorial, servicios: vServicios, personal: vPersonal, bitacora: vBitacora, perfil: vPerfil };
   try { await loadProfile(); } catch (e) { $('#main').innerHTML = `<div class="view">${empty('No se pudo cargar tu perfil. ' + esc(errMsg(e)), '<button class="btn primary" onclick="location.reload()">Reintentar</button>')}</div>`; return; }
   buildNav(); go(location.hash.slice(1) || 'inicio');
   document.addEventListener('visibilitychange', () => { if (!document.hidden && ['turnos', 'personal', 'inicio'].includes(current) && navigator.onLine && !$('.modal-bg')) refresh(); });
