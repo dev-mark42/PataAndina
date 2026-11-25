@@ -107,3 +107,7 @@ Ver `ACCESO-Y-CARGA-DEMO.md`. SQL adicional: `supabase/seed_completo_y_bitacora.
 
 ## Acceso como invitado (sin cuenta)
 En `index.html` existe el botón visible **Entrar como invitado**. Abre `guest.html` sin Supabase Auth y permite consultar avances, galería y catálogo. Es deliberadamente de solo lectura: no crea reservas, pedidos, mascotas ni historial. Para funciones personales se requiere una cuenta real.
+
+
+## V24: invitado y avances
+El botón público abre `invitado.html`, una ruta separada sin Supabase Auth. Si el catálogo remoto no responde, se muestra un catálogo local de demostración en solo lectura. La sección Avances tiene desplazamiento interno. Publica el contenido de esta carpeta en la raíz del repositorio GitHub Pages.

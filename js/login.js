@@ -54,7 +54,14 @@
     const b = $('#regBtn'); btnBusy(b, true);
     const { data, error } = await sb.auth.signUp({ email: $('#rEmail').value.trim(), password: $('#rPass').value, options: { data: { full_name: $('#rName').value.trim().replace(/\s+/g, ' '), phone: $('#rPhone').value }, emailRedirectTo: new URL('index.html?confirmed=1', location.href).href } });
     btnBusy(b, false);
-    if (error) { const human = errMsg(error); msg($('#regMsg'), human, 'bad'); if (/rate limit|too many/i.test(error.message || '')) { $('#regBtn').disabled = true; $('#regBtn').textContent = 'Registro temporalmente limitado'; $('#regMsg').insertAdjacentHTML('afterend', '<p class="hint" style="margin:.5rem 0">No repitas el registro. Si tu cuenta ya existe, vuelve a <button type="button" class="link" data-go="login">Ingresar</button>. Si no, espera a que Supabase libere el envío de correos.</p>'); } return; }
+    if (error) {
+      if (/rate limit|too many|email rate/i.test(error.message || '')) {
+        msg($('#regMsg'), 'Supabase limitó temporalmente el envío de correos. No repitas el registro. Si tu usuario ya existe, vuelve a Ingresar; si todavía no existe, créalo desde Supabase > Authentication > Users con Auto Confirm User.', 'bad');
+      } else {
+        msg($('#regMsg'), errMsg(error), 'bad');
+      }
+      return;
+    }
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) return msg($('#regMsg'), 'Ese correo ya tiene una cuenta. Ingresa o recupera tu contraseña.', 'bad');
     Pata.confetti();
     // El registro nunca abre el panel automáticamente: el usuario siempre inicia sesión manualmente.

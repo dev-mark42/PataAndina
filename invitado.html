@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#315d4d">
+  <meta name="robots" content="noindex">
+  <title>Servicios públicos · Pata Andina Vet</title>
+  <link rel="manifest" href="./manifest.json"><link rel="icon" type="image/png" href="./icons/icon-192.png"><link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="guest">
+  <header class="top">
+    <div class="brand"><b>✚</b><span>PATA ANDINA</span></div>
+    <span class="badge b-pendiente">Catálogo público · solo lectura</span>
+    <span class="net" id="net" data-s="on"><i></i><b>En línea</b></span>
+    <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema">🌙</button>
+    <a class="btn sm" id="exitBtn" href="./index.html">Ir al login</a>
+  </header>
+  <main class="gmain" id="main">
+    <h2>Catálogo de servicios</h2>
+    <p class="lead">Consulta los servicios sin registrarte. Para solicitar una cita debes iniciar sesión.</p>
+    <div id="gPane"></div>
+  </main>
+  <script src="./js/config.js"></script>
+  <script src="./js/vendor/supabase.js"></script>
+  <script src="./js/art.js"></script>
+  <script src="./js/common.js"></script>
+  <script src="./js/guest.js"></script>
+</body>
+</html>
