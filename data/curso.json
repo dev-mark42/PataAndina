@@ -1,0 +1,142 @@
+[
+ {
+  "semana": 1,
+  "titulo": "Interactividad y formularios",
+  "temas": [
+   {
+    "id": "01-modo-oscuro",
+    "t": "Modo oscuro",
+    "d": "Cambio de tema claro y oscuro con variables CSS; la preferencia se guarda en el navegador.",
+    "demo": "tema",
+    "demoLabel": "Probar el cambio de tema"
+   },
+   {
+    "id": "02-filtro-catalogo",
+    "t": "Filtro de catálogo",
+    "d": "Búsqueda y filtros por categoría que muestran solo los elementos que coinciden.",
+    "demo": "filtro",
+    "demoLabel": "Abrir el catálogo con filtros"
+   },
+   {
+    "id": "03-menu-hamburguesa",
+    "t": "Menú hamburguesa",
+    "d": "Navegación colapsable para pantallas pequeñas, usable con teclado y con el dedo."
+   },
+   {
+    "id": "04-validacion-formulario",
+    "t": "Validación de formulario",
+    "d": "Reglas en vivo, mensaje claro por campo y bloqueo del envío mientras haya errores."
+   },
+   {
+    "id": "05-alertas-toast",
+    "t": "Alertas toast",
+    "d": "Avisos breves y no intrusivos para confirmar acciones o informar errores.",
+    "demo": "toast",
+    "demoLabel": "Ver dos alertas"
+   }
+  ]
+ },
+ {
+  "semana": 2,
+  "titulo": "Datos, rendimiento y seguridad",
+  "temas": [
+   {
+    "id": "01-delegacion-eventos-hidratacion",
+    "t": "Delegación de eventos e hidratación",
+    "d": "Un solo escuchador en el contenedor atiende elementos creados dinámicamente; la interfaz se activa sobre el HTML ya cargado."
+   },
+   {
+    "id": "02-carrusel-zoom-animaciones",
+    "t": "Carrusel con zoom y animaciones",
+    "d": "Galería deslizable con ampliación de imagen y transiciones suaves."
+   },
+   {
+    "id": "03-fetch-lazyloading-dropbox",
+    "t": "Fetch y carga diferida",
+    "d": "Consumo de datos remotos con fetch y carga perezosa de imágenes alojadas en la nube."
+   },
+   {
+    "id": "04-arquitectura-pwa-offline",
+    "t": "Arquitectura PWA y modo sin conexión",
+    "d": "Manifest, service worker y caché para instalar la app y abrirla sin internet.",
+    "demo": "pwa",
+    "demoLabel": "Ver el estado de la PWA"
+   },
+   {
+    "id": "05-seguridad-xss-subida-imagen",
+    "t": "Seguridad: XSS y subida de imágenes",
+    "d": "Escape del texto del usuario y validación de tipo y tamaño de archivo antes de aceptarlo."
+   }
+  ]
+ },
+ {
+  "semana": 3,
+  "titulo": "Calidad, accesibilidad y arquitectura",
+  "temas": [
+   {
+    "id": "01-componentes-encapsulamiento",
+    "t": "Componentes y encapsulamiento",
+    "d": "Piezas de interfaz reutilizables con estilos y comportamiento aislados."
+   },
+   {
+    "id": "02-mobile-first-grid-flexbox",
+    "t": "Mobile-first con Grid y Flexbox",
+    "d": "Diseño que parte del celular y crece a pantallas grandes con Grid y Flexbox."
+   },
+   {
+    "id": "03-cwv-bem-dompurify-sw",
+    "t": "Core Web Vitals, BEM, DOMPurify y SW",
+    "d": "Métricas de rendimiento, nombres de clases BEM, sanitización de HTML y service worker."
+   },
+   {
+    "id": "04-accesibilidad-contraste",
+    "t": "Accesibilidad y contraste",
+    "d": "Colores con contraste suficiente (WCAG), foco visible y etiquetas correctas."
+   },
+   {
+    "id": "05-smoke-test-dom",
+    "t": "Smoke test del DOM",
+    "d": "Prueba rápida que comprueba que los elementos clave existen y que la página arranca."
+   },
+   {
+    "id": "06-semantica-a11y-hmr",
+    "t": "Semántica, a11y y HMR",
+    "d": "HTML semántico, atributos ARIA y recarga en caliente durante el desarrollo."
+   }
+  ]
+ },
+ {
+  "semana": 4,
+  "titulo": "Accesibilidad aplicada",
+  "temas": [
+   {
+    "id": "01-alto-contraste",
+    "t": "Alto contraste",
+    "d": "Dos modos de alto contraste: fondo blanco con texto negro y fondo negro con texto amarillo; los colores de texto cambian junto con el fondo.",
+    "demo": "hc",
+    "demoLabel": "Cambiar el contraste"
+   },
+   {
+    "id": "02-tamano-texto",
+    "t": "Tamaño de texto ajustable",
+    "d": "Botones A− y A+ que escalan toda la interfaz sin romper el diseño.",
+    "demo": "fs",
+    "demoLabel": "Aumentar el texto"
+   },
+   {
+    "id": "03-teclado-foco",
+    "t": "Teclado y foco visible",
+    "d": "Todo es alcanzable con Tab; el foco tiene un contorno grueso y las fotos se amplían con Enter.",
+    "demo": "foco",
+    "demoLabel": "Probar el foco"
+   },
+   {
+    "id": "04-movimiento-reducido",
+    "t": "Movimiento reducido",
+    "d": "Interruptor de «sin animaciones» y respeto de prefers-reduced-motion.",
+    "demo": "mo",
+    "demoLabel": "Alternar animaciones"
+   }
+  ]
+ }
+]

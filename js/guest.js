@@ -1,13 +1,20 @@
-(function(){'use strict';
- const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const cfg=window.PATA_CONFIG||{}, ok=/^https:\/\/\S+/.test(cfg.SUPABASE_URL||'')&&(cfg.SUPABASE_ANON_KEY||'').length>40;
- let rows=[],cat='todas'; const names={consulta:'Consultas',prevencion:'Prevención',procedimientos:'Procedimientos',diagnostico:'Diagnóstico',bienestar:'Bienestar'};
- const icon=s=>`./imagenes/${encodeURIComponent(s.icon||'consulta')}.svg`;
- function paint(){const q=$('#gSearch').value.trim().toLocaleLowerCase('es');const list=rows.filter(s=>(cat==='todas'||s.category===cat)&&(!q||(s.name+' '+s.description+' '+(s.tag||'')).toLocaleLowerCase('es').includes(q)));$('#gCount').textContent=`${list.length} servicios`;
- $('#gServices').innerHTML=list.map(s=>`<article class="service-tile"><div class="service-tile-icon"><img src="${icon(s)}" alt="" loading="lazy"></div><div class="service-tile-body"><span class="tag">${esc(names[s.category]||s.category)}</span><h3>${esc(s.name)}</h3><p>${esc(s.description)}</p><div class="service-meta"><b>${esc(s.price_label||'Consultar')}</b><span>${Number(s.duration_min)||0} min</span></div><button class="btn ghost sm" data-detail="${esc(s.id)}">Ver detalles</button></div></article>`).join('')||'<div class="empty">No encontramos servicios con esos filtros.</div>';
- }
- $('#gSearch').addEventListener('input',paint);$('#gCats').addEventListener('click',e=>{const b=e.target.closest('[data-cat]');if(!b)return;cat=b.dataset.cat;$('#gCats').querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===b));paint();});
- $('#gServices').addEventListener('click',e=>{const b=e.target.closest('[data-detail]');if(!b)return;const s=rows.find(x=>x.id===b.dataset.detail);if(!s)return;Pata.modal(`<div class="service-detail"><div class="service-tile-icon"><img src="${icon(s)}" alt=""></div><span class="tag">${esc(names[s.category]||s.category)}</span><h2>${esc(s.name)}</h2><p>${esc(s.description)}</p><p class="hint">${esc(s.details||'')}</p><dl class="kv"><dt>Duración</dt><dd>${Number(s.duration_min)||0} minutos</dd><dt>Precio</dt><dd>${esc(s.price_label||'Consultar')}</dd><dt>Atención para</dt><dd>${esc(s.species||'Perros y gatos')}</dd></dl><div class="actions"><a class="btn primary" href="./index.html">Ingresar para reservar</a><button class="btn ghost" data-close>Cerrar</button></div></div>`);});
- async function start(){if(!ok||!window.supabase){$('#gServices').innerHTML='<div class="notice warn">Configura Supabase en js/config.js para cargar el catálogo.</div>';return;}try{const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const {data,error}=await sb.from('services_catalog').select('id,name,category,description,details,duration_min,price_label,tag,species,icon,sort_order').eq('active',true).order('sort_order');if(error)throw error;rows=data||[];paint();}catch(e){$('#gServices').innerHTML=`<div class="notice bad">No se pudo cargar el catálogo. ${esc(e.message||'Comprueba la conexión y las políticas públicas de services_catalog.')}</div>`;}}
- start();
+/* Modo invitado: solo lectura. Reservar/pagar/mascotas redirigen al inicio de sesión. */
+(function () {
+  'use strict';
+  const P = Pata, { $, esc, toast } = P;
+  P.initTheme($('#themeBtn')); P.initNet($('#net'));
+  $('#gPets').innerHTML = ['cat', 'dog', 'bird'].map(k => `<div class="pw">${ART[k]()}</div>`).join('');
+  const S = { list: [], media: {}, state: { tab: 'top' } };
+  const toLogin = (why) => { toast(why || 'Inicia sesión para continuar.', 'err'); try { sessionStorage.setItem('pata-from-guest', '1'); } catch (_) { } setTimeout(() => location.assign('./index.html'), 1100); };
+  const draw = () => { $('#gCatalog').innerHTML = Catalog.view(S.list, S.media, S.state); P.lazyScan($('#gCatalog')); };
+  Catalog.bind($('#gCatalog'), { state: S.state, redraw: draw, list: () => S.list, media: () => S.media, bookLabel: 'Reservar (requiere iniciar sesión)', onBook: () => toLogin('Para reservar necesitas iniciar sesión.') });
+  (async () => {
+    try { S.media = await (await fetch('./data/media.json')).json(); } catch (_) { }
+    try {
+      if (!P.sb) throw new Error('Falta configurar Supabase');
+      const r = await P.sb.from('services_catalog').select('*').order('sort_order'); if (r.error) throw r.error; S.list = r.data; P.cache.set('guest-services', r.data);
+    } catch (e) { S.list = P.cache.get('guest-services') || []; if (!S.list.length) { $('#gCatalog').innerHTML = `<div class="notice bad">${esc(P.errMsg(e))}</div>`; return; } }
+    draw();
+  })();
+  P.settings().then(s => { $('#gSocial').innerHTML = P.socialBar(s.whatsapp) + `<p class="hint" style="text-align:center;margin-top:.5rem">${esc(s.address)}</p>`; });
 })();

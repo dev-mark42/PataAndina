@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#315d4d">
+  <meta name="description" content="Explora los servicios de Pata Andina Vet como invitado. Para reservar necesitas iniciar sesión.">
+  <title>Invitado · Pata Andina Vet</title>
+  <link rel="manifest" href="./manifest.json"><link rel="icon" type="image/png" href="./icons/icon-192.png"><link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./css/style.css"><link rel="stylesheet" href="./css/fx.css">
+</head>
+<body class="guest">
+  <header class="top">
+    <div class="brand"><b>✚</b><span>PATA ANDINA</span></div>
+    <span class="badge b-pendiente">Invitado</span>
+    <span class="net" id="net" data-s="on"><i></i><b>En línea</b></span>
+    <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema">🌙</button>
+    <a class="btn sm primary" href="./index.html" id="loginLink">Iniciar sesión</a>
+  </header>
+  <main class="gmain" id="main">
+    <div class="view">
+      <div class="greeting"><div><h2>Bienvenido/a a Pata Andina Vet</h2><p>Mira nuestros servicios, fotos y videos. Para <b>reservar</b>, guardar el historial de tu mascota o pagar, inicia sesión.</p></div><div class="petrow" id="gPets"></div></div>
+      <div id="gCatalog"><div class="skeleton"></div></div>
+      <div class="card" style="margin-top:1rem"><h3>¿Qué puedes hacer con una cuenta?</h3><ul style="margin:.4rem 0 .8rem 1.1rem"><li>Reservar citas con horarios libres en tiempo real.</li><li>Ver el historial médico y el carnet de vacunas de tus mascotas.</li><li>Pagar con QR y descargar tu recibo.</li></ul><a class="btn accent" href="./index.html">Crear cuenta o iniciar sesión</a></div>
+      <div id="gSocial" style="margin:1rem 0 4rem"></div>
+    </div>
+  </main>
+  <script src="./js/config.js" defer></script>
+  <script src="./js/vendor/supabase.js" defer></script>
+  <script src="./js/art.js" defer></script>
+  <script src="./js/common.js" defer></script>
+  <script src="./js/a11y.js" defer></script>
+  <script src="./js/site.js" defer></script>
+  <script src="./js/fx.js" defer></script>
+  <script src="./js/catalog.js" defer></script>
+  <script src="./js/guest.js" defer></script>
+</body>
+</html>

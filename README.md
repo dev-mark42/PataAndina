@@ -1,90 +1,96 @@
-# 🐾 Pata Andina Vet · PWA con Supabase
+# Pata Andina Vet · PWA con Supabase (v3)
 
-Aplicación web instalable (PWA) para una clínica veterinaria: login único, registro de tutores y mascotas,
-reservas con validación de horarios, historial médico y panel del personal. Frontend en **HTML + CSS + JavaScript puro**
-(sin frameworks) y base de datos **PostgreSQL en Supabase** con seguridad por filas (RLS).
+Veterinaria instalable (PWA) en HTML + CSS + JavaScript puro con base de datos PostgreSQL en Supabase.
+Tres paneles (tutor, personal veterinario, administrador), modo invitado, pagos con QR y recibo, carnet de vacunas,
+bitácora de eventos, accesibilidad (alto contraste) y una **auditoría oculta** de los avances del curso.
 
-## 1. Puesta en marcha (≈10 minutos)
+## 1. Puesta en marcha
 
-### Paso 1 · Crear el proyecto en Supabase
-1. Entra a https://supabase.com → **New project** (anota la contraseña de la base de datos).
-2. **SQL Editor → New query**, pega TODO el contenido de `supabase/schema.sql` y pulsa **Run**.
-   Crea tablas, validaciones, políticas RLS, funciones seguras y los **16 servicios**. Se puede ejecutar varias veces.
-3. **Project Settings → API**: copia **Project URL** y la clave **anon public**.
-   *(Nunca uses la clave `service_role` en el frontend.)*
+### SQL (Supabase > SQL Editor > New query > Run), **en este orden**
+| Orden | Archivo | Qué hace |
+|---|---|---|
+| 1 | `supabase/schema.sql` | Tablas base, RLS, 16 servicios, reservas sin superposición. |
+| 2 | `supabase/02-admin-pagos-bitacora.sql` | Rol administrador, aves, Top 10 y 3 grupos de servicios, pagos QR/efectivo con recibo, carnet de vacunas, bitácora, ajustes (WhatsApp, QR). |
+| 3 | `supabase/03-datos-masivos.sql` | **Inserción masiva**: 45 usuarios, ~84 mascotas, ~630 citas, ~450 atenciones, ~175 vacunas, ~455 pagos y ~2.500 eventos de bitácora. |
+| 4 (opcional) | `supabase/04-hazme-admin.sql` | Convierte TU correo en administrador. |
 
-### Paso 2 · Conectar la app
-Edita `js/config.js` y pega tus dos valores:
-```js
-window.PATA_CONFIG = {
-  SUPABASE_URL: "https://xxxxxxxx.supabase.co",
-  SUPABASE_ANON_KEY: "eyJhbGciOi..."
-};
-```
+Los 3 primeros son idempotentes (puedes repetirlos). Los probé en un PostgreSQL 16 real (con `auth` simulado): crean todo sin errores.
 
-### Paso 3 · Configurar el correo (autenticación)
-En Supabase → **Authentication**:
-- **Providers → Email**: para probar rápido en clase desactiva *Confirm email* (si lo dejas activo, el registro pedirá confirmar por correo; la app lo maneja).
-- **URL Configuration**: en **Site URL** y **Redirect URLs** agrega la URL donde publicarás la app
-  (ej. `http://localhost:5500/index.html` y la de producción). Sin esto el enlace de "Olvidé mi clave" no vuelve a la app.
+### Conexión
+`js/config.js` ya trae tu URL y clave pública. Si cambias de proyecto, reemplázalas (nunca uses `service_role` aquí).
 
-### Paso 4 · Ejecutar
-Los service workers y PWA requieren `http://localhost` o `https`. No abras el HTML con doble clic.
+### Ejecutar
 ```bash
-npx serve . -l 5500        # o: python3 -m http.server 5500
+npx serve . -l 5500      # o: python3 -m http.server 5500
 ```
-Abre http://localhost:5500 . Para publicar: Netlify, Vercel, GitHub Pages o Cloudflare Pages (arrastrar la carpeta). En el celular, "Agregar a pantalla de inicio".
+Abre http://localhost:5500 (no con doble clic: el service worker exige http/https).
+Publicar: Netlify / Vercel / GitHub Pages (arrastrar la carpeta). En Supabase > Authentication > URL Configuration agrega tu URL.
 
-## 2. Cuentas y credenciales
-| Rol | Cómo se obtiene |
-|---|---|
-| **Tutor** | Se crea desde la pantalla *Crear cuenta*. |
-| **Personal** | Regístrate como tutor → *Perfil → Soy personal de la clínica* → ingresa el código **`PATA-STAFF-2026`** (un solo uso). |
+## 2. Credenciales de la inserción masiva
+| Rol | Correo | Contraseña |
+|---|---|---|
+| Administrador | `admin@pataandina.com` | `Admin2026!` |
+| Personal | `vet@pataandina.com`, `vet2@pataandina.com` | `Vet2026!` |
+| Tutor (con historial) | `ana@pataandina.com`, `carlos@pataandina.com` | `Demo2026!` |
+| Tutores | `tutor01@pataandina.com` … `tutor40@pataandina.com` | `Demo2026!` |
 
-Para generar más códigos (SQL Editor): `insert into staff_activation_codes(code) values ('TU-CODIGO-NUEVO');`
-**Cambia el código de ejemplo antes de entregar** (`update staff_activation_codes set code='OTRO' where code='PATA-STAFF-2026';`).
-Los correos y contraseñas de prueba los defines tú al registrarte; el repositorio no incluye contraseñas.
+Cambia esas contraseñas antes de publicar. Para volver admin a tu propio correo usa `04-hazme-admin.sql`.
+El código de activación de personal de ejemplo es `PATA-STAFF-2026` (el admin genera más en Administración > Equipo).
 
-## 3. Qué hace cada pantalla
-- **Acceso (única)**: ingresar / crear cuenta / recuperar contraseña / **nueva contraseña** (flujo final del enlace del correo). Mascotas animadas (gato y perro), patitas flotantes, bloqueo tras 5 intentos.
-- **Inicio**: saludo, contadores animados, próxima cita, accesos rápidos y consejos desplegables.
-- **Mascotas**: alta/edición/eliminación con validaciones; cada mascota se despliega.
-- **Reservar** (4 pasos): mascota → servicio (categorías desplegables + buscador) → fecha y horarios libres → confirmar. Sin superposición (restricción `no_overlap` en la BD), sin domingos, horario 09–13 y 14–18, anticipación mínima 30 min, máx. 90 días y 5 citas activas por tutor.
-- **Mis citas**: filtros, detalle desplegable y cancelación.
-- **Historial**: por mascota, con próxima visita sugerida.
-- **Servicios**: 16 servicios con filtros + comida para gatos.
-- **Personal**: confirmar/rechazar (el rechazo exige motivo), agenda (hoy / 7 días / todas), registrar atención (completa la cita y actualiza el peso).
-- **Perfil**: datos, cambio de contraseña, activación de personal, cerrar sesión.
+## 3. Los tres paneles (se explican dentro de la app, en Inicio)
+- **Tutor**: reservar y cancelar citas, mascotas, historial médico, carnet de vacunas, pagar con QR y ver/imprimir el recibo.
+- **Personal**: confirmar/rechazar solicitudes, agenda, atender y registrar diagnóstico, registrar vacunas, validar pagos (incluye lector de notificaciones) y cobrar en efectivo.
+- **Administrador**: dashboard (ingresos, citas por mes/estado, top servicios), servicios (precio, visibilidad, video), equipo y roles, **bitácora de eventos** con filtros y buscador, y ajustes (WhatsApp, dirección, titular y **QR de pago**).
+- **Invitado** (botón en el login): solo ve el catálogo, fotos y videos; si intenta reservar lo envía a iniciar sesión.
+- Al cerrar sesión aparece la pantalla «¡Hasta luego!» con las mascotas.
 
-## 4. PWA
-Instalable (botón 📲 y menú del navegador), funciona en celular (barra inferior) y laptop (menú lateral).
-`sw.js` precachea la app y los iconos para abrir sin conexión; las llamadas a Supabase **nunca** se cachean.
-Sin conexión se muestran los últimos datos guardados y se bloquea escribir. Tema claro/oscuro, `prefers-reduced-motion` respetado.
+## 4. Auditoría oculta del curso
+En el login, **toca el logo 7 veces** (aparece la advertencia) y **8 veces** (entra). Abre `audit.html`: 4 semanas, cada concepto con *dónde está aplicado* y una **prueba en vivo** (modo oscuro, filtros, delegación de eventos, lazy loading, PWA, XSS, contraste real calculado, smoke test del DOM, alto contraste, etc.). No aparece en ningún menú del sistema entregado.
 
-## 5. Seguridad (RLS)
-- Cada tutor solo ve/edita **sus** mascotas, citas e historial; el personal ve todo.
-- El cliente **no puede** cambiar su rol, cambiar estados de citas ni escribir historial: eso solo ocurre por funciones `security definer` (`staff_set_status`, `staff_register_attention`, `activate_staff`, `cancel_my_appointment`).
-- `staff_activation_codes` tiene RLS sin políticas: inaccesible desde el navegador.
-- Todo el texto del usuario se escapa antes de mostrarse (anti-XSS).
+## 5. Accesibilidad (semana 4)
+Botón ♿ en todas las pantallas: contraste **blanco/negro** (texto negro) y **negro/amarillo** (texto amarillo), tamaño de texto A−/A+, sin animaciones, letra fácil de leer y subrayado de enlaces. Se guarda en el dispositivo. Foco visible, navegación por teclado, `aria-*`, `prefers-reduced-motion`.
 
-## 6. Pruebas incluidas
+## 6. Diseño y rendimiento
+Misma paleta (verde bosque, terracota, crema). Login con aurora, rayos de luz, guirnalda de luces, luciérnagas en canvas, escritura animada, tarjeta de cristal con borde giratorio y gato, perro y pájaro cuyos ojos siguen el puntero (saltan y sueltan corazones al tocarlos). Botones con brillo y ripple, tarjetas con foco de luz, contadores animados.
+Servicios: **Top 10** + solo **3 categorías** (Consultas y prevención · Cirugía y procedimientos · Diagnóstico y bienestar), tarjetas grandes con foto, ficha con 3 fotos del proceso, video y botón de reservar. Poco scroll: tiles, pestañas, acordeones y modales.
+Carga rápida: scripts con `defer`, imágenes con `loading="lazy"` y `data-src` (IntersectionObserver), fichas que se «hidratan» al abrirse, videos con `preload="none"`, service worker con precaché y caché de datos para ver lo último sin conexión.
+
+## 7. Pagos con QR y recibo
+1. Admin sube la foto de su QR en Administración > Ajustes (viene un QR de ejemplo).
+2. El tutor, en *Mis citas > Pagar con QR*, escanea, paga y registra el **código de operación** (5–24 caracteres, no se puede reutilizar) y opcionalmente la foto del comprobante.
+3. El personal lo ve en *Personal > Pagos* y valida (o rechaza con motivo) → se emite el **recibo** `PA-AAAA-000123` con sello PAGADO, imprimible/PDF.
+4. **Lector de notificaciones**: el personal pega el texto de la notificación de Yape/Tigo/banco; el sistema extrae monto y código, lo compara con los pagos pendientes y, si coincide, valida y emite el recibo.
+
+### Sobre «escuchar» notificaciones de Android
+**Una PWA no puede leer las notificaciones de otras apps** (el navegador no lo permite; eso requiere `NotificationListenerService`, que solo existe en apps Android nativas). Por eso implementé la alternativa que sí funciona en PWA: pegar la notificación (paso 4) y validación manual con comprobante. Para automatizarlo de verdad hay que hacer una app Android pequeña en el teléfono de la clínica que lea la notificación y la envíe a una *Edge Function* de Supabase que marque el pago como validado; las funciones SQL de este proyecto ya sirven de base.
+
+## 8. Correos de Supabase (límite de envíos)
+El servicio de correo gratuito de Supabase tiene un **límite muy bajo por hora**; por eso aparecían errores al registrarse/recuperar contraseña. El código **ya no tiene bloqueos propios** (se quitaron los límites de intentos). Para que nada se corte con muchos usuarios:
+- Authentication > Providers > Email: **desactiva «Confirm email»** (registro inmediato, sin correo de verificación), o
+- configura un SMTP propio (Gmail/Brevo/Resend) en Authentication > SMTP Settings para correos ilimitados.
+Tras registrarte, la app te lleva siempre a **Iniciar sesión** con tu correo ya escrito.
+
+## 9. Fotos y videos de los servicios
+`media/photos/` (3 fotos del proceso + póster por servicio) y `media/videos/` (16 videos). Son **material generado a partir de las fotos del proyecto** (no encontré videos reales: este entorno no tiene acceso a internet). Para poner uno real: en Administración > Servicios pega un enlace `https://` de YouTube o `.mp4`, o reemplaza `media/videos/<id>.mp4`.
+
+## 10. Contacto y redes
+WhatsApp (`wa.me/59170000000`, número de ejemplo editable en Ajustes), Facebook (`https://www.facebook.com/`) y TikTok (`https://www.tiktok.com/`). El test revisa que ningún enlace local esté roto.
+
+## 11. Pruebas
 ```bash
-npm i && npm test        # 44 comprobaciones de interfaz con un Supabase simulado
+npm i && npm test      # enlaces + más de 100 comprobaciones de interfaz (Supabase simulado)
 ```
-`tests/db-test.sql` prueba el esquema en un PostgreSQL real (solapamientos, domingo, almuerzo, escalada de rol, RLS, flujo del personal).
-**Importante:** no pude conectarme a tu proyecto Supabase real; antes de la exposición haz la prueba manual de la sección 7.
+`tests/db-test3.sql` y `tests/db-test3b.sql` prueban el SQL en PostgreSQL. **No pude probar contra tu Supabase real ni ver las pantallas en un navegador real**: haz la prueba manual de abajo.
 
-## 7. Lista de prueba manual (con tu Supabase real)
-1. Crear cuenta A → entrar → agregar mascota → reservar mañana 10:00 → ver "Pendiente" en *Mis citas*.
-2. Crear cuenta B (otro navegador) → intentar reservar el mismo horario → debe verlo ocupado.
-3. Cuenta B → Perfil → activar personal → *Personal → Pendientes* → confirmar → *Agenda → Atender* → guardar diagnóstico.
-4. Cuenta A → *Historial* → ver la atención y la próxima visita.
-5. "Olvidé mi clave" → abrir el enlace del correo → crear nueva contraseña → ingresar.
-6. Celular: instalar la PWA, activar modo avión y abrir: debe cargar con datos guardados.
+### Prueba manual (10 minutos)
+1. Registrarte → te lleva a Iniciar sesión → entrar. 2. Reservar y ver el horario ocupado desde otra cuenta.
+3. Pagar con QR → entrar como `vet@` → Pagos → validar → ver el recibo en la cuenta del tutor.
+4. Entrar como `admin@`: dashboard, Bitácora, Ajustes. 5. ♿ alto contraste en celular y laptop.
+6. Instalar la PWA y abrirla en modo avión. 7. Logo ×8 → auditoría.
 
 ## Estructura
 ```
-index.html (acceso)  app.html (aplicación)  sw.js  manifest.json
-css/style.css  js/{config,common,art,login,app}.js  js/vendor/supabase.js (supabase-js 2.45.4, sin CDN)
-supabase/schema.sql  tests/  data/productos-gatos.json  imagenes/  icons/
+index.html (acceso)  app.html (sistema)  guest.html (invitado)  audit.html (oculta)  sw.js  manifest.json
+css/{style,fx}.css  js/{config,common,site,fx,a11y,art,catalog,login,app,guest,audit}.js  js/vendor/supabase.js
+supabase/*.sql  data/{media,curso,productos-gatos}.json  media/{photos,videos}  imagenes/  icons/  tests/
 ```

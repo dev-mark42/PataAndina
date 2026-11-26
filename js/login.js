@@ -2,12 +2,24 @@
 (function () {
   'use strict';
   const { $, $$, v, sb, toast, errMsg, btnBusy, setField, liveValidate } = Pata;
-  $('#heroCat').innerHTML = ART.cat(); $('#heroDog').innerHTML = ART.dog();
-  $('#walkDog').innerHTML = ART.dog(); $('#walkCat').innerHTML = ART.cat();
-  $('#miniPets').innerHTML = ART.cat() + ART.dog(); $('#ecg').innerHTML = ART.ecg(); Pata.paws($('#paws'));
+  $('#logoMark').innerHTML = ART.paw(); $('#petCat').innerHTML = ART.cat(); $('#petDog').innerHTML = ART.dog(); $('#petBird').innerHTML = ART.bird(); $('#petHello').innerHTML = ART.bird(); $('#ecg').innerHTML = ART.ecg(); Pata.paws($('#paws'));
   Pata.initTheme($('#themeBtn')); Pata.initPWA($('#installBtn'));
   Pata.onNet = on => { $('#offWarn').hidden = on; }; Pata.initNet(null);
   if (!Pata.configured) $('#cfgWarn').hidden = false;
+
+  /* ---- Acceso oculto: 7 toques al logo -> advertencia -> un toque más -> modo invitado ---- */
+  (function () {
+    let n = 0, last = 0, armedUntil = 0;
+    $('#logo').addEventListener('click', () => {
+      const now = Date.now();
+      if (armedUntil && now < armedUntil) { try { sessionStorage.setItem('pata-audit', '1'); } catch (_) { } return location.assign('./audit.html'); }
+      armedUntil = 0; n = now - last < 1500 ? n + 1 : 1; last = now;
+      if (n === 7) { n = 0; armedUntil = now + 6000; toast('Advertencia: zona reservada (auditoría del curso). Un toque más en el logo para continuar.', 'err'); }
+    });
+  })();
+
+  $('#guestBtn').addEventListener('click', () => location.assign('./guest.html'));
+  Pata.settings().then(s => { $('#social').innerHTML = Pata.socialBar(s.whatsapp); });
 
   /* ---- Pestañas ---- */
   function show(name) {
@@ -16,25 +28,23 @@
     $('#authTabs').hidden = name === 'newpass';
   }
   $('#authTabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) show(t.dataset.tab); });
-  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) show(g.dataset.go); const b = e.target.closest('.eye-btn'); if (b) { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? '👁️' : '🙈'; } });
+  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) show(g.dataset.go); const b = e.target.closest('.eye-btn'); if (b) { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? 'Ver' : 'Ocultar'; } });
   const msg = (el, text, kind) => { el.hidden = !text; el.textContent = text || ''; el.className = 'notice' + (kind ? ' ' + kind : ''); };
   const meter = (inp, bar, txt) => inp.addEventListener('input', () => { const s = v.strength(inp.value); bar.style.width = s * 25 + '%'; bar.style.background = ['#b4483a', '#b4483a', '#b7791f', '#2f7d57', '#2f7d57'][s]; if (txt) txt.textContent = ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Excelente'][s]; });
   meter($('#rPass'), $('#meter'), $('#meterTxt')); meter($('#nPass'), $('#nMeter'));
   $('#rPhone').addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
 
   /* ---- Ingresar (con bloqueo temporal tras 5 intentos fallidos) ---- */
-  let fails = 0, lockUntil = 0;
   const vLogin = liveValidate($('#loginForm'), { lEmail: x => v.email(x.trim()) ? '' : 'Escribe un correo válido.', lPass: x => x ? '' : 'Escribe tu contraseña.' });
   $('#loginForm').addEventListener('submit', async e => {
     e.preventDefault(); msg($('#loginMsg'), '');
     if (!vLogin()) return;
     if (!Pata.configured) return msg($('#loginMsg'), 'La app no está configurada con Supabase (js/config.js).', 'bad');
-    if (Date.now() < lockUntil) return msg($('#loginMsg'), `Demasiados intentos. Espera ${Math.ceil((lockUntil - Date.now()) / 1000)} s.`, 'bad');
     const b = $('#loginBtn'); btnBusy(b, true);
     const { error } = await sb.auth.signInWithPassword({ email: $('#lEmail').value.trim(), password: $('#lPass').value });
     btnBusy(b, false);
-    if (error) { if (++fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; } return msg($('#loginMsg'), errMsg(error), 'bad'); }
-    Pata.confetti(16); setTimeout(() => location.replace('./app.html'), 450);
+    if (error) return msg($('#loginMsg'), errMsg(error), 'bad');
+    Pata.confetti(16); Pata.logEvent('inicio_sesion'); setTimeout(() => location.replace('./app.html'), 500);
   });
 
   /* ---- Registro ---- */
@@ -55,23 +65,25 @@
     btnBusy(b, false);
     if (error) return msg($('#regMsg'), errMsg(error), 'bad');
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) return msg($('#regMsg'), 'Ese correo ya tiene una cuenta. Ingresa o recupera tu contraseña.', 'bad');
-    Pata.confetti();
-    if (data.session) { toast('¡Cuenta creada! Bienvenido/a.'); setTimeout(() => location.replace('./app.html'), 700); }
-    else { msg($('#regMsg'), '¡Cuenta creada! Te enviamos un correo para confirmarla. Ábrelo y luego ingresa.', 'ok'); $('#regForm').reset(); $$('#regForm .field').forEach(f => f.classList.remove('valid')); }
+    /* Al registrarte SIEMPRE vuelves a "Ingresar": sin sesión automática, con tu correo ya escrito. */
+    const mail = $('#rEmail').value.trim(), needsConfirm = !data.session;
+    if (data.session) { try { await sb.auth.signOut(); } catch (_) { } }
+    Pata.confetti(30); toast('¡Cuenta creada! Ahora inicia sesión.');
+    $('#regForm').reset(); $$('#regForm .field').forEach(f => f.classList.remove('valid', 'invalid')); $('#meter').style.width = '0';
+    show('login'); $('#lEmail').value = mail; $('#lPass').value = '';
+    msg($('#loginMsg'), needsConfirm ? 'Cuenta creada. Te enviamos un correo: confírmalo y luego inicia sesión aquí.' : 'Cuenta creada. Escribe tu contraseña para entrar.', 'ok');
+    setTimeout(() => $('#lPass').focus(), 60);
   });
 
   /* ---- Recuperar contraseña (envía el correo) ---- */
   const vRec = liveValidate($('#recForm'), { cEmail: x => v.email(x.trim()) ? '' : 'Escribe un correo válido.' });
-  let recLock = 0;
   $('#recForm').addEventListener('submit', async e => {
     e.preventDefault(); msg($('#recMsg'), ''); if (!vRec()) return;
     if (!Pata.configured) return msg($('#recMsg'), 'La app no está configurada con Supabase (js/config.js).', 'bad');
-    if (Date.now() < recLock) return msg($('#recMsg'), `Espera ${Math.ceil((recLock - Date.now()) / 1000)} s para pedir otro enlace.`, 'bad');
     const b = $('#recBtn'); btnBusy(b, true);
     const { error } = await sb.auth.resetPasswordForEmail($('#cEmail').value.trim(), { redirectTo: new URL('index.html', location.href).href });
     btnBusy(b, false);
     if (error) return msg($('#recMsg'), errMsg(error), 'bad');
-    recLock = Date.now() + 60000;
     msg($('#recMsg'), 'Si el correo está registrado, recibirás un enlace en unos minutos. Revisa también spam.', 'ok');
   });
 
@@ -88,11 +100,11 @@
 
   /* ---- Estado inicial: ¿viene del correo de recuperación? ¿ya hay sesión? ---- */
   const hash = location.hash + location.search;
-  let recovery = /type=recovery/.test(hash);
+  let recovery = /type=recovery/.test(hash); const confirmed = /type=(signup|email_change|invite)/.test(hash);
   if (recovery) show('newpass');
   if (Pata.configured) {
     sb.auth.onAuthStateChange((ev) => { if (ev === 'PASSWORD_RECOVERY') { recovery = true; show('newpass'); } });
-    sb.auth.getSession().then(({ data }) => { if (data.session && !recovery) location.replace('./app.html'); });
+    sb.auth.getSession().then(async ({ data }) => { if (confirmed && data.session) { try { await sb.auth.signOut(); } catch (_) { } history.replaceState(null, '', location.pathname); show('login'); msg($('#loginMsg'), 'Correo confirmado. Ahora inicia sesión.', 'ok'); } else if (data.session && !recovery) location.replace('./app.html'); });
     if (/error_description=/.test(hash)) { const m = decodeURIComponent((hash.match(/error_description=([^&]+)/) || [])[1] || '').replace(/\+/g, ' '); show('login'); msg($('#loginMsg'), /expired|invalid/i.test(m) ? 'El enlace venció o ya fue usado. Pide uno nuevo en "Olvidé mi clave".' : m, 'bad'); }
   }
 })();

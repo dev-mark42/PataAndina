@@ -1,0 +1,418 @@
+{
+ "consulta-general": {
+  "photos": [
+   {
+    "src": "./media/photos/consulta-general-1.webp",
+    "cap": "Recepción y datos de tu mascota",
+    "alt": "Consulta veterinaria general: paso 1, recepción y datos de tu mascota"
+   },
+   {
+    "src": "./media/photos/consulta-general-2.webp",
+    "cap": "Examen clínico completo",
+    "alt": "Consulta veterinaria general: paso 2, examen clínico completo"
+   },
+   {
+    "src": "./media/photos/consulta-general-3.webp",
+    "cap": "Plan y recomendaciones para casa",
+    "alt": "Consulta veterinaria general: paso 3, plan y recomendaciones para casa"
+   }
+  ],
+  "video": "./media/videos/consulta-general.mp4",
+  "poster": "./media/photos/consulta-general-poster.webp",
+  "steps": [
+   "Recepción y datos de tu mascota",
+   "Examen clínico completo",
+   "Plan y recomendaciones para casa"
+  ]
+ },
+ "consulta-felina": {
+  "photos": [
+   {
+    "src": "./media/photos/consulta-felina-1.webp",
+    "cap": "Llegada tranquila en kennel",
+    "alt": "Consulta felina: paso 1, llegada tranquila en kennel"
+   },
+   {
+    "src": "./media/photos/consulta-felina-2.webp",
+    "cap": "Revisión suave y sin estrés",
+    "alt": "Consulta felina: paso 2, revisión suave y sin estrés"
+   },
+   {
+    "src": "./media/photos/consulta-felina-3.webp",
+    "cap": "Indicaciones para tu gato",
+    "alt": "Consulta felina: paso 3, indicaciones para tu gato"
+   }
+  ],
+  "video": "./media/videos/consulta-felina.mp4",
+  "poster": "./media/photos/consulta-felina-poster.webp",
+  "steps": [
+   "Llegada tranquila en kennel",
+   "Revisión suave y sin estrés",
+   "Indicaciones para tu gato"
+  ]
+ },
+ "control-cachorro": {
+  "photos": [
+   {
+    "src": "./media/photos/control-cachorro-1.webp",
+    "cap": "Peso y medidas de crecimiento",
+    "alt": "Control de cachorro o gatito: paso 1, peso y medidas de crecimiento"
+   },
+   {
+    "src": "./media/photos/control-cachorro-2.webp",
+    "cap": "Revisión de dientes y desarrollo",
+    "alt": "Control de cachorro o gatito: paso 2, revisión de dientes y desarrollo"
+   },
+   {
+    "src": "./media/photos/control-cachorro-3.webp",
+    "cap": "Calendario preventivo",
+    "alt": "Control de cachorro o gatito: paso 3, calendario preventivo"
+   }
+  ],
+  "video": "./media/videos/control-cachorro.mp4",
+  "poster": "./media/photos/control-cachorro-poster.webp",
+  "steps": [
+   "Peso y medidas de crecimiento",
+   "Revisión de dientes y desarrollo",
+   "Calendario preventivo"
+  ]
+ },
+ "vacuna-canina": {
+  "photos": [
+   {
+    "src": "./media/photos/vacuna-canina-1.webp",
+    "cap": "Revisión previa de salud",
+    "alt": "Vacunación canina: paso 1, revisión previa de salud"
+   },
+   {
+    "src": "./media/photos/vacuna-canina-2.webp",
+    "cap": "Aplicación de la vacuna",
+    "alt": "Vacunación canina: paso 2, aplicación de la vacuna"
+   },
+   {
+    "src": "./media/photos/vacuna-canina-3.webp",
+    "cap": "Observación y carnet al día",
+    "alt": "Vacunación canina: paso 3, observación y carnet al día"
+   }
+  ],
+  "video": "./media/videos/vacuna-canina.mp4",
+  "poster": "./media/photos/vacuna-canina-poster.webp",
+  "steps": [
+   "Revisión previa de salud",
+   "Aplicación de la vacuna",
+   "Observación y carnet al día"
+  ]
+ },
+ "vacuna-felina": {
+  "photos": [
+   {
+    "src": "./media/photos/vacuna-felina-1.webp",
+    "cap": "Evaluación del gatito",
+    "alt": "Vacunación felina: paso 1, evaluación del gatito"
+   },
+   {
+    "src": "./media/photos/vacuna-felina-2.webp",
+    "cap": "Vacunación segura",
+    "alt": "Vacunación felina: paso 2, vacunación segura"
+   },
+   {
+    "src": "./media/photos/vacuna-felina-3.webp",
+    "cap": "Registro en el carnet",
+    "alt": "Vacunación felina: paso 3, registro en el carnet"
+   }
+  ],
+  "video": "./media/videos/vacuna-felina.mp4",
+  "poster": "./media/photos/vacuna-felina-poster.webp",
+  "steps": [
+   "Evaluación del gatito",
+   "Vacunación segura",
+   "Registro en el carnet"
+  ]
+ },
+ "desparasitacion": {
+  "photos": [
+   {
+    "src": "./media/photos/desparasitacion-1.webp",
+    "cap": "Peso para dosificar bien",
+    "alt": "Desparasitación: paso 1, peso para dosificar bien"
+   },
+   {
+    "src": "./media/photos/desparasitacion-2.webp",
+    "cap": "Aplicación del antiparasitario",
+    "alt": "Desparasitación: paso 2, aplicación del antiparasitario"
+   },
+   {
+    "src": "./media/photos/desparasitacion-3.webp",
+    "cap": "Calendario de refuerzos",
+    "alt": "Desparasitación: paso 3, calendario de refuerzos"
+   }
+  ],
+  "video": "./media/videos/desparasitacion.mp4",
+  "poster": "./media/photos/desparasitacion-poster.webp",
+  "steps": [
+   "Peso para dosificar bien",
+   "Aplicación del antiparasitario",
+   "Calendario de refuerzos"
+  ]
+ },
+ "profilaxis-dental": {
+  "photos": [
+   {
+    "src": "./media/photos/profilaxis-dental-1.webp",
+    "cap": "Valoración de la boca",
+    "alt": "Evaluación y limpieza dental: paso 1, valoración de la boca"
+   },
+   {
+    "src": "./media/photos/profilaxis-dental-2.webp",
+    "cap": "Limpieza profesional",
+    "alt": "Evaluación y limpieza dental: paso 2, limpieza profesional"
+   },
+   {
+    "src": "./media/photos/profilaxis-dental-3.webp",
+    "cap": "Cuidados dentales en casa",
+    "alt": "Evaluación y limpieza dental: paso 3, cuidados dentales en casa"
+   }
+  ],
+  "video": "./media/videos/profilaxis-dental.mp4",
+  "poster": "./media/photos/profilaxis-dental-poster.webp",
+  "steps": [
+   "Valoración de la boca",
+   "Limpieza profesional",
+   "Cuidados dentales en casa"
+  ]
+ },
+ "esterilizacion": {
+  "photos": [
+   {
+    "src": "./media/photos/esterilizacion-1.webp",
+    "cap": "Evaluación prequirúrgica",
+    "alt": "Evaluación para esterilización: paso 1, evaluación prequirúrgica"
+   },
+   {
+    "src": "./media/photos/esterilizacion-2.webp",
+    "cap": "Exámenes y preparación",
+    "alt": "Evaluación para esterilización: paso 2, exámenes y preparación"
+   },
+   {
+    "src": "./media/photos/esterilizacion-3.webp",
+    "cap": "Cuidados después de la cirugía",
+    "alt": "Evaluación para esterilización: paso 3, cuidados después de la cirugía"
+   }
+  ],
+  "video": "./media/videos/esterilizacion.mp4",
+  "poster": "./media/photos/esterilizacion-poster.webp",
+  "steps": [
+   "Evaluación prequirúrgica",
+   "Exámenes y preparación",
+   "Cuidados después de la cirugía"
+  ]
+ },
+ "cirugia": {
+  "photos": [
+   {
+    "src": "./media/photos/cirugia-1.webp",
+    "cap": "Examen y diagnóstico",
+    "alt": "Valoración quirúrgica: paso 1, examen y diagnóstico"
+   },
+   {
+    "src": "./media/photos/cirugia-2.webp",
+    "cap": "Explicación de riesgos y presupuesto",
+    "alt": "Valoración quirúrgica: paso 2, explicación de riesgos y presupuesto"
+   },
+   {
+    "src": "./media/photos/cirugia-3.webp",
+    "cap": "Programación del procedimiento",
+    "alt": "Valoración quirúrgica: paso 3, programación del procedimiento"
+   }
+  ],
+  "video": "./media/videos/cirugia.mp4",
+  "poster": "./media/photos/cirugia-poster.webp",
+  "steps": [
+   "Examen y diagnóstico",
+   "Explicación de riesgos y presupuesto",
+   "Programación del procedimiento"
+  ]
+ },
+ "curaciones": {
+  "photos": [
+   {
+    "src": "./media/photos/curaciones-1.webp",
+    "cap": "Limpieza de la herida",
+    "alt": "Curaciones y control ambulatorio: paso 1, limpieza de la herida"
+   },
+   {
+    "src": "./media/photos/curaciones-2.webp",
+    "cap": "Curación y vendaje",
+    "alt": "Curaciones y control ambulatorio: paso 2, curación y vendaje"
+   },
+   {
+    "src": "./media/photos/curaciones-3.webp",
+    "cap": "Control de la cicatrización",
+    "alt": "Curaciones y control ambulatorio: paso 3, control de la cicatrización"
+   }
+  ],
+  "video": "./media/videos/curaciones.mp4",
+  "poster": "./media/photos/curaciones-poster.webp",
+  "steps": [
+   "Limpieza de la herida",
+   "Curación y vendaje",
+   "Control de la cicatrización"
+  ]
+ },
+ "laboratorio": {
+  "photos": [
+   {
+    "src": "./media/photos/laboratorio-1.webp",
+    "cap": "Toma de muestra",
+    "alt": "Toma de muestra y laboratorio: paso 1, toma de muestra"
+   },
+   {
+    "src": "./media/photos/laboratorio-2.webp",
+    "cap": "Análisis de laboratorio",
+    "alt": "Toma de muestra y laboratorio: paso 2, análisis de laboratorio"
+   },
+   {
+    "src": "./media/photos/laboratorio-3.webp",
+    "cap": "Entrega e interpretación",
+    "alt": "Toma de muestra y laboratorio: paso 3, entrega e interpretación"
+   }
+  ],
+  "video": "./media/videos/laboratorio.mp4",
+  "poster": "./media/photos/laboratorio-poster.webp",
+  "steps": [
+   "Toma de muestra",
+   "Análisis de laboratorio",
+   "Entrega e interpretación"
+  ]
+ },
+ "imagenologia": {
+  "photos": [
+   {
+    "src": "./media/photos/imagenologia-1.webp",
+    "cap": "Preparación del paciente",
+    "alt": "Ecografía o radiografía: paso 1, preparación del paciente"
+   },
+   {
+    "src": "./media/photos/imagenologia-2.webp",
+    "cap": "Ecografía o radiografía",
+    "alt": "Ecografía o radiografía: paso 2, ecografía o radiografía"
+   },
+   {
+    "src": "./media/photos/imagenologia-3.webp",
+    "cap": "Lectura del estudio",
+    "alt": "Ecografía o radiografía: paso 3, lectura del estudio"
+   }
+  ],
+  "video": "./media/videos/imagenologia.mp4",
+  "poster": "./media/photos/imagenologia-poster.webp",
+  "steps": [
+   "Preparación del paciente",
+   "Ecografía o radiografía",
+   "Lectura del estudio"
+  ]
+ },
+ "consulta-domicilio": {
+  "photos": [
+   {
+    "src": "./media/photos/consulta-domicilio-1.webp",
+    "cap": "Coordinación de zona y hora",
+    "alt": "Consulta a domicilio: paso 1, coordinación de zona y hora"
+   },
+   {
+    "src": "./media/photos/consulta-domicilio-2.webp",
+    "cap": "Atención en tu casa",
+    "alt": "Consulta a domicilio: paso 2, atención en tu casa"
+   },
+   {
+    "src": "./media/photos/consulta-domicilio-3.webp",
+    "cap": "Seguimiento por la clínica",
+    "alt": "Consulta a domicilio: paso 3, seguimiento por la clínica"
+   }
+  ],
+  "video": "./media/videos/consulta-domicilio.mp4",
+  "poster": "./media/photos/consulta-domicilio-poster.webp",
+  "steps": [
+   "Coordinación de zona y hora",
+   "Atención en tu casa",
+   "Seguimiento por la clínica"
+  ]
+ },
+ "peluqueria": {
+  "photos": [
+   {
+    "src": "./media/photos/peluqueria-1.webp",
+    "cap": "Cepillado y revisión de piel",
+    "alt": "Baño y peluquería higiénica: paso 1, cepillado y revisión de piel"
+   },
+   {
+    "src": "./media/photos/peluqueria-2.webp",
+    "cap": "Baño con productos suaves",
+    "alt": "Baño y peluquería higiénica: paso 2, baño con productos suaves"
+   },
+   {
+    "src": "./media/photos/peluqueria-3.webp",
+    "cap": "Secado y corte higiénico",
+    "alt": "Baño y peluquería higiénica: paso 3, secado y corte higiénico"
+   }
+  ],
+  "video": "./media/videos/peluqueria.mp4",
+  "poster": "./media/photos/peluqueria-poster.webp",
+  "steps": [
+   "Cepillado y revisión de piel",
+   "Baño con productos suaves",
+   "Secado y corte higiénico"
+  ]
+ },
+ "nutricion": {
+  "photos": [
+   {
+    "src": "./media/photos/nutricion-1.webp",
+    "cap": "Historial alimenticio",
+    "alt": "Orientación nutricional: paso 1, historial alimenticio"
+   },
+   {
+    "src": "./media/photos/nutricion-2.webp",
+    "cap": "Evaluación de condición corporal",
+    "alt": "Orientación nutricional: paso 2, evaluación de condición corporal"
+   },
+   {
+    "src": "./media/photos/nutricion-3.webp",
+    "cap": "Plan de alimentación",
+    "alt": "Orientación nutricional: paso 3, plan de alimentación"
+   }
+  ],
+  "video": "./media/videos/nutricion.mp4",
+  "poster": "./media/photos/nutricion-poster.webp",
+  "steps": [
+   "Historial alimenticio",
+   "Evaluación de condición corporal",
+   "Plan de alimentación"
+  ]
+ },
+ "microchip": {
+  "photos": [
+   {
+    "src": "./media/photos/microchip-1.webp",
+    "cap": "Verificación de identidad",
+    "alt": "Microchip de identificación: paso 1, verificación de identidad"
+   },
+   {
+    "src": "./media/photos/microchip-2.webp",
+    "cap": "Implantación del microchip",
+    "alt": "Microchip de identificación: paso 2, implantación del microchip"
+   },
+   {
+    "src": "./media/photos/microchip-3.webp",
+    "cap": "Registro con tus datos",
+    "alt": "Microchip de identificación: paso 3, registro con tus datos"
+   }
+  ],
+  "video": "./media/videos/microchip.mp4",
+  "poster": "./media/photos/microchip-poster.webp",
+  "steps": [
+   "Verificación de identidad",
+   "Implantación del microchip",
+   "Registro con tus datos"
+  ]
+ }
+}
